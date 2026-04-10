@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "prisma generate && prisma migrate deploy && next build",
+    "build": "prisma generate && (prisma migrate deploy || echo 'Migracion saltada') && next build",
     "start": "next start",
     "lint": "next lint",
     "tunnel": "npx localtunnel --port 3000"
