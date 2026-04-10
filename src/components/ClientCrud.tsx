@@ -156,7 +156,7 @@ export default function ClientCrud({ clients, admins }: { clients: Client[], adm
                         )}
                         <td style={{ padding: '1.25rem 1rem', display: 'flex', gap: '0.5rem' }}>
                            <button onClick={() => startEdit(c)} className={styles.buttonOutline} style={{ padding: '0.5rem 1rem', background: 'transparent', borderColor: 'var(--accent-secondary)', color: 'var(--accent-secondary)' }}>Editar</button>
-                           <button onClick={() => handleDelete(c.id, c.nombre)} className={`${styles.button} ${styles.buttonDanger}`} style={{ padding: '0.5rem 1rem' }}>Borrar</button>
+                           <button onClick={() => handleDelete(c.id, c.nombre || 'este cliente')} className={`${styles.button} ${styles.buttonDanger}`} style={{ padding: '0.5rem 1rem' }}>Borrar</button>
                         </td>
                      </>
                    )}
