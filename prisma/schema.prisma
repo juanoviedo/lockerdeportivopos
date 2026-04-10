@@ -1,0 +1,119 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Admin {
+  id               String    @id @default(cuid())
+  nombre           String
+  email            String    @unique
+  password         String
+  resetToken       String?
+  resetTokenExpiry DateTime?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+  createdBy        String?
+  updatedBy        String?
+}
+
+model Client {
+  id        String   @id @default(cuid())
+  cedula    String   @unique
+  nombre    String?
+  telefono  String?
+  correo    String?
+  ventas    Sale[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  createdBy String?
+  updatedBy String?
+}
+
+model Product {
+  id            String     @id @default(cuid())
+  nombre        String     @unique
+  precio        Float      @default(0)
+  precio_minimo Float      @default(0)
+  items         SaleItem[]
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
+  createdBy     String?
+  updatedBy     String?
+}
+
+model Seller {
+  id        String   @id @default(cuid())
+  nombre    String   @unique
+  ventas    Sale[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  createdBy String?
+  updatedBy String?
+}
+
+model PaymentMethod {
+  id           String        @id @default(cuid())
+  nombre       String        @unique
+  transactions Transaction[]
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  createdBy    String?
+  updatedBy    String?
+}
+
+model Sale {
+  id              String        @id @default(cuid())
+  clientId        String?
+  client          Client?       @relation(fields: [clientId], references: [id], onDelete: SetNull)
+  cliente_cedula  String
+  cliente_nombre  String?
+  sellerId        String?
+  seller          Seller?       @relation(fields: [sellerId], references: [id], onDelete: SetNull)
+  vendedor_nombre String?
+  total           Float         @default(0)
+  metodo_pago_1   String?
+  valor_pago_1    Float?
+  metodo_pago_2   String?
+  valor_pago_2    Float?
+  observaciones   String?
+  items           SaleItem[]
+  transactions    Transaction[]
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+  createdBy       String?
+  updatedBy       String?
+}
+
+model SaleItem {
+  id              String   @id @default(cuid())
+  ventaId         String
+  venta           Sale     @relation(fields: [ventaId], references: [id], onDelete: Cascade)
+  productId       String
+  product         Product  @relation(fields: [productId], references: [id])
+  cantidad        Int
+  precio_unitario Float
+  subtotal        Float
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  createdBy       String?
+  updatedBy       String?
+}
+
+model Transaction {
+  id              String         @id @default(cuid())
+  ventaId         String
+  venta           Sale           @relation(fields: [ventaId], references: [id], onDelete: Cascade)
+  paymentMethodId String
+  paymentMethod   PaymentMethod  @relation(fields: [paymentMethodId], references: [id])
+  monto           Float          @default(0)
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+  createdBy       String?
+  updatedBy       String?
+
+  @@map("valores_metodos_pagos")
+}

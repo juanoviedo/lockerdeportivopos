@@ -1,0 +1,140 @@
+{
+  "admins": [
+    {
+      "id": "cmnnp1tc80000w90k0g5vwndb",
+      "nombre": "Admin Principal",
+      "email": "admin@pos.com",
+      "password": "$2b$10$gfIjn.6h6aNhACV8rp0.oOxEqcHQz.J.jc9pJHTgTJVvaHXU59fCi",
+      "resetToken": null,
+      "resetTokenExpiry": null,
+      "createdAt": "2026-04-06T21:20:00.968Z"
+    }
+  ],
+  "clients": [
+    {
+      "id": "cmnnmnwax0002w9a0v611gttq",
+      "cedula": "1107066464",
+      "nombre": "Juan Manuel Oviedo Lutkens",
+      "telefono": "3168314501",
+      "correo": "joviedo@pprocesses.onmicrosoft.com",
+      "createdAt": "2026-04-06T20:13:12.393Z"
+    },
+    {
+      "id": "cmnnmrcpm0003w9a0cye1jkb8",
+      "cedula": "1144075881",
+      "nombre": "Alexandra Peña Yepes",
+      "telefono": "3002374114",
+      "correo": "alexandrayepe23@hotmail.com",
+      "createdAt": "2026-04-06T20:15:53.626Z"
+    }
+  ],
+  "products": [
+    {
+      "id": "cmnnmm13z0000w9a085539a9u",
+      "nombre": "Uniforme Brasil Talla XL",
+      "precio": 60000,
+      "precio_minimo": 50000,
+      "createdAt": "2026-04-06T20:11:45.310Z"
+    },
+    {
+      "id": "cmnnmmv9t0001w9a0yzgr9duh",
+      "nombre": "Uniforme Alemania Talla XL",
+      "precio": 60000,
+      "precio_minimo": 50000,
+      "createdAt": "2026-04-06T20:12:24.402Z"
+    },
+    {
+      "id": "cmnnmw9ga0007w9a0svtma465",
+      "nombre": "Uniforme Argentina Talla XL",
+      "precio": 60000,
+      "precio_minimo": 50000,
+      "createdAt": "2026-04-06T20:19:42.683Z"
+    }
+  ],
+  "sellers": [
+    {
+      "id": "cmnnmaubm0000w9xs2yv37wjz",
+      "nombre": "Alexandra Peña",
+      "createdAt": "2026-04-06T20:03:03.297Z"
+    },
+    {
+      "id": "cmnnmbqot0001w9xs36myv0xn",
+      "nombre": "Ricardo Peña",
+      "createdAt": "2026-04-06T20:03:45.245Z"
+    },
+    {
+      "id": "cmnnms0me0004w9a0fuabf28u",
+      "nombre": "Isabella",
+      "createdAt": "2026-04-06T20:16:24.615Z"
+    },
+    {
+      "id": "cmnnms7pc0005w9a00y4apfrm",
+      "nombre": "Daniel",
+      "createdAt": "2026-04-06T20:16:33.792Z"
+    },
+    {
+      "id": "cmnnmsd9u0006w9a0jq9wmdgb",
+      "nombre": "Jennifer",
+      "createdAt": "2026-04-06T20:16:41.010Z"
+    }
+  ],
+  "paymentMethods": [
+    {
+      "id": "cmnnnyqsd0000w910gekdh892",
+      "nombre": "Tarjeta de Credito",
+      "createdAt": "2026-04-06T20:49:38.077Z"
+    }
+  ],
+  "sales": [
+    {
+      "id": "cmnnmw9gd0009w9a0wkgpb8i1",
+      "clientId": "cmnnmnwax0002w9a0v611gttq",
+      "cliente_cedula": "1107066464",
+      "cliente_nombre": "Juan Manuel Oviedo Lutkens",
+      "sellerId": "cmnnms0me0004w9a0fuabf28u",
+      "vendedor_nombre": "Isabella",
+      "total": 50000,
+      "metodo_pago_1": "Efectivo",
+      "valor_pago_1": 50000,
+      "metodo_pago_2": null,
+      "valor_pago_2": null,
+      "observaciones": null,
+      "createdAt": "2026-04-06T20:19:42.686Z",
+      "items": [
+        {
+          "id": "cmnnmw9ge000bw9a0vzbvz6n5",
+          "ventaId": "cmnnmw9gd0009w9a0wkgpb8i1",
+          "productId": "cmnnmw9ga0007w9a0svtma465",
+          "cantidad": 1,
+          "precio_unitario": 50000,
+          "subtotal": 50000
+        }
+      ]
+    },
+    {
+      "id": "cmnnnyqsm0002w910lcvzptpd",
+      "clientId": "cmnnmnwax0002w9a0v611gttq",
+      "cliente_cedula": "1107066464",
+      "cliente_nombre": "Juan Manuel Oviedo Lutkens",
+      "sellerId": "cmnnms0me0004w9a0fuabf28u",
+      "vendedor_nombre": "Isabella",
+      "total": 55000,
+      "metodo_pago_1": "Tarjeta de Credito",
+      "valor_pago_1": 55000,
+      "metodo_pago_2": null,
+      "valor_pago_2": null,
+      "observaciones": null,
+      "createdAt": "2026-04-06T20:49:38.085Z",
+      "items": [
+        {
+          "id": "cmnnnyqsm0004w910cwjdwkz8",
+          "ventaId": "cmnnnyqsm0002w910lcvzptpd",
+          "productId": "cmnnmw9ga0007w9a0svtma465",
+          "cantidad": 1,
+          "precio_unitario": 55000,
+          "subtotal": 55000
+        }
+      ]
+    }
+  ]
+}
