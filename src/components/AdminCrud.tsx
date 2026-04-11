@@ -22,10 +22,9 @@ export default function AdminCrud({ data, currentUserEmail }: { data: Admin[], c
     const formData = new FormData(formUrl)
     try {
       const res = await createAdmin(formData)
-      if (res?.error) alert(res.error)
-      else formUrl.reset()
+      if (!res?.error) formUrl.reset()
     } catch (err: unknown) {
-      alert("Error: " + getErrorMessage(err))
+      console.error("Error:", getErrorMessage(err))
     } finally {
       setLoading(false)
     }

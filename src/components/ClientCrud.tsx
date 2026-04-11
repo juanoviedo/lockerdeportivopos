@@ -30,19 +30,18 @@ export default function ClientCrud({ clients, admins }: { clients: Client[], adm
   };
 
   const handleCreate = async () => {
-    if (!newCedula) return alert("La cédula / NIT es requerida");
+    if (!newCedula) return;
     try {
       await createClientAdmin({ 
         cedula: newCedula, nombre: newNombre, telefono: newTelefono, correo: newCorreo 
       })
-      alert("Cliente creado exitosamente.")
       setNewCedula('')
       setNewNombre('')
       setNewTelefono('')
       setNewCorreo('')
       setIsCreating(false)
     } catch (e: unknown) {
-      alert("Error: " + getErrorMessage(e))
+      console.error("Error:", getErrorMessage(e))
     }
   }
 
@@ -67,10 +66,9 @@ export default function ClientCrud({ clients, admins }: { clients: Client[], adm
         telefono: editTelefono, 
         correo: editCorreo 
       })
-      alert("Cliente actualizado exitosamente.")
       setEditingId(null)
     } catch (e: unknown) {
-      alert("Error al actualizar: " + getErrorMessage(e))
+      console.error("Error al actualizar:", getErrorMessage(e))
     }
   }
 

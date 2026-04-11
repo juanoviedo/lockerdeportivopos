@@ -17,26 +17,26 @@ export default function PaymentMethodCrud({ methods, admins }: { methods: any[],
   };
 
   const handleCreate = async () => {
-    if (!newNombre) return alert("El nombre es requerido");
+    if (!newNombre) return;
     setLoading(true)
     try {
       await createPaymentMethodAdmin({ nombre: newNombre })
       setNewNombre('')
     } catch (e: any) {
-      alert("Error al crear: " + e.message)
+      console.error("Error al crear:", e.message)
     } finally {
       setLoading(false)
     }
   }
 
   const handleUpdate = async (id: string) => {
-    if (!editNombre) return alert("Nombre requerido")
+    if (!editNombre) return;
     setLoading(true)
     try {
       await updatePaymentMethod(id, { nombre: editNombre })
       setEditingId(null)
     } catch (e: any) {
-      alert("Error al actualizar: " + e.message)
+      console.error("Error al actualizar:", e.message)
     } finally {
       setLoading(false)
     }

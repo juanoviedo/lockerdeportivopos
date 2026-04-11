@@ -146,8 +146,8 @@ export default function PosDashboard({
     setLoading(true)
 
     try {
-      if (!cedula) return alert('Ingrese la cédula o seleccione Sin Cédula')
-      if (pagosValidos.length === 0) return alert('Debe agregar al menos un pago')
+      if (!cedula) return
+      if (pagosValidos.length === 0) return
 
       const payload = {
         cedula,
@@ -180,12 +180,11 @@ export default function PosDashboard({
       setItems([{ id: Date.now(), nombre: '', cantidad: 1, precio_unitario: 0 }])
       setPagos([{ id: Date.now(), metodoPagoId: '', valor: '' }])
       setShowForm(false)
-      alert(editingSaleId ? '¡Venta actualizada con éxito!' : '¡Venta registrada con éxito!')
       if (editingSaleId && isEditPage) {
         window.location.href = '/'
       }
     } catch (error: any) {
-      alert('Error: ' + error.message)
+      console.error('Error:', error.message)
     } finally {
       setLoading(false)
     }

@@ -15,13 +15,11 @@ export default function ChangePasswordForm({ currentUserEmail }: { currentUserEm
     
     try {
       const res = await changeOwnPassword(formData)
-      if (res?.error) alert(res.error)
-      else {
-        alert("Contraseña cambiada exitosamente!")
+      if (!res?.error) {
         formUrl.reset()
       }
     } catch (err: any) {
-      alert("Error: " + err.message)
+      console.error("Error:", err.message)
     } finally {
       setLoading(false)
     }

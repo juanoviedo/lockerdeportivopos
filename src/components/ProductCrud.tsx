@@ -26,16 +26,15 @@ export default function ProductCrud({ products, admins }: { products: Product[],
   };
 
   const handleCreate = async () => {
-    if (!newNombre) return alert("El nombre es requerido");
+    if (!newNombre) return;
     try {
       await createProductAdmin({ nombre: newNombre, precio: newPrecio || 0, precio_minimo: newPrecioMinimo || 0 })
-      alert("Producto creado exitosamente.")
       setNewNombre('')
       setNewPrecio('')
       setNewPrecioMinimo('')
       setIsCreating(false)
     } catch (e: unknown) {
-      alert("Error: " + getErrorMessage(e))
+      console.error("Error:", getErrorMessage(e))
     }
   }
 
@@ -54,10 +53,9 @@ export default function ProductCrud({ products, admins }: { products: Product[],
     if (!editingId) return;
     try {
       await updateProduct(editingId, { nombre: editNombre, precio: editPrecio || 0, precio_minimo: editPrecioMinimo || 0 })
-      alert("Producto actualizado exitosamente.")
       setEditingId(null)
     } catch (e: unknown) {
-      alert("Error al actualizar: " + getErrorMessage(e))
+      console.error("Error al actualizar:", getErrorMessage(e))
     }
   }
 

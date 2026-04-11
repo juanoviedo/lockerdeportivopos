@@ -21,14 +21,13 @@ export default function SellerCrud({ sellers, admins }: { sellers: Seller[], adm
   };
 
   const handleCreate = async () => {
-    if (!newNombre) return alert("El nombre es requerido");
+    if (!newNombre) return;
     try {
       await createSellerAdmin({ nombre: newNombre })
-      alert("Vendedor creado exitosamente.")
       setNewNombre('')
       setIsCreating(false)
     } catch (e: unknown) {
-      alert("Error: " + getErrorMessage(e))
+      console.error("Error:", getErrorMessage(e))
     }
   }
 
@@ -45,10 +44,9 @@ export default function SellerCrud({ sellers, admins }: { sellers: Seller[], adm
     if (!editingId) return;
     try {
       await updateSeller(editingId, { nombre: editNombre })
-      alert("Vendedor actualizado exitosamente.")
       setEditingId(null)
     } catch (e: unknown) {
-      alert("Error al actualizar: " + getErrorMessage(e))
+      console.error("Error al actualizar:", getErrorMessage(e))
     }
   }
 

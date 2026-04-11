@@ -31,8 +31,16 @@ yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
 
-# env files (can opt-in for committing if needed)
-.env*
+# Environment files - NUNCA SUBIR SECRETOS
+.env
+.env.local              # Secrets locales
+.env.*.local            # Otros ambientes locales
+.env.production.local   # Producción local
+
+# Archivos que SÍ se suben (sin valores sensibles)
+# - .env.example (template)
+# - .env.staging (placeholders)
+# - .env.production (placeholders)
 
 # vercel
 .vercel
@@ -41,4 +49,18 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
+# Prisma
 /src/generated/prisma
+prisma/migrations/        # Opcional: ignorar si están muy grandes
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Database backups
+*.db
+*.sql
+db_backup*.json
