@@ -58,7 +58,8 @@ export async function login(formData: FormData) {
   if (!isValid) return { error: "Credenciales inválidas" }
 
   await createSession(admin.id)
-  redirect('/admin')
+  // redirect('/admin') // Remove redirect from server action
+  return { success: true }
 }
 
 export async function logout() {
