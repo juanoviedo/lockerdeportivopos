@@ -23,7 +23,7 @@ export async function createSession(userId: string) {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
     expires: expiresAt,
-    sameSite: 'lax',
+    sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
     path: '/',
   })
 }
@@ -58,7 +58,7 @@ export async function login(formData: FormData) {
   if (!isValid) return { error: "Credenciales inválidas" }
 
   await createSession(admin.id)
-  redirect('/admin')
+  return { success: true }
 }
 
 export async function logout() {

@@ -19,6 +19,8 @@ export default function LoginPage() {
       const res = await login(formData)
       if (res?.error) {
         setError(res.error)
+      } else if (res?.success) {
+        window.location.href = '/admin'
       }
     } catch (err: any) {
       setError(err.message)
