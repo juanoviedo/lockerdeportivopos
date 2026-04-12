@@ -1,9 +1,10 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useTransition } from 'react'
 import { createPortal } from 'react-dom'
+import { useRouter } from 'next/navigation'
 import styles from '@/app/page.module.css'
-import { createSale, deleteSale, updateSale } from '@/app/actions'
+import { createSale, deleteSale, updateSale, toggleSaleInvoiced } from '@/app/actions'
 import type { HistoricalSale } from '@/lib/types'
 
 type PosDashboardProps = {
@@ -57,7 +58,10 @@ export default function PosDashboard({
   const [editingSaleId, setEditingSaleId] = useState<string | null>(null)
   const [salePendingEdit, setSalePendingEdit] = useState<HistoricalSale | null>(null)
   const [salePendingDeleteId, setSalePendingDeleteId] = useState<string | null>(null)
+  const [salePendingToggle, setSalePendingToggle] = useState<{ sale: HistoricalSale; nextState: boolean } | null>(null)
   const [isMounted, setIsMounted] = useState(false)
+  const [isTogglePending, startTransition] = useTransition()
+  const router = useRouter()
 
   const [items, setItems] = useState<SaleItemState[]>([
     { id: 1, nombre: '', cantidad: 1, precio_unitario: 0 },
@@ -139,6 +143,26 @@ export default function PosDashboard({
 
   const getPaymentMethodName = (paymentMethodId: string) => {
     return paymentMethods?.find((paymentMethod) => paymentMethod.id === paymentMethodId)?.nombre || ''
+  }
+
+  const requestToggleFacturada = (sale: HistoricalSale) => {
+    setSalePendingToggle({ sale, nextState: !sale.facturada })
+  }
+
+  const confirmToggleFacturada = async () => {
+    if (!salePendingToggle) return
+
+    const { sale, nextState } = salePendingToggle
+
+    startTransition(async () => {
+      try {
+        await toggleSaleInvoiced(sale.id, nextState)
+        setSalePendingToggle(null)
+        router.refresh()
+      } catch (error: any) {
+        alert('No se pudo actualizar el estado de facturación: ' + (error?.message || error))
+      }
+    })
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -250,7 +274,7 @@ export default function PosDashboard({
   }, [initialEditSaleId, historicalSales])
 
   return (
-    <div className={styles.dashboard}>
+    <div className={styles.dashboard} style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
       {!showForm && !isEditPage && (
         <div style={{ display: 'flex', justifyContent: 'flex-start', marginBottom: '1rem' }} className="animate-fade-in">
           <button
@@ -277,26 +301,27 @@ export default function PosDashboard({
         </div>
       )}
 
-      {showForm && (
-        <section className={`${styles.formSection} glass-panel animate-fade-in`} style={{ animationDelay: '0s' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
-            <h2 className="title-main" style={{ margin: 0 }}>{editingSaleId ? 'Editar Venta' : 'Nueva Venta'}</h2>
-            <button
-              type="button"
-              className={styles.buttonOutline}
-              style={{ padding: '0.5rem 1rem', borderRadius: 'var(--radius-md)', cursor: 'pointer', background: 'transparent', border: '1px solid var(--text-secondary)', color: 'var(--text-secondary)' }}
-              onClick={() => {
-                if (isEditPage) {
-                  window.location.href = '/'
-                  return
-                }
-                setShowForm(false)
-                setEditingSaleId(null)
-              }}
-            >
-              {isEditPage ? 'Cancelar edición' : 'Cerrar Formulario'}
-            </button>
-          </div>
+      <div className="pos-dashboard-main" style={{ display: 'flex', gap: '2rem' }}>
+        {showForm && (
+          <section className={`${styles.formSection} glass-panel animate-fade-in pos-form-section`} style={{ animationDelay: '0s', flex: 1 }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+              <h2 className="title-main" style={{ margin: 0 }}>{editingSaleId ? 'Editar Venta' : 'Nueva Venta'}</h2>
+              <button
+                type="button"
+                className={styles.buttonOutline}
+                style={{ padding: '0.5rem 1rem', borderRadius: 'var(--radius-md)', cursor: 'pointer', background: 'transparent', border: '1px solid var(--text-secondary)', color: 'var(--text-secondary)' }}
+                onClick={() => {
+                  if (isEditPage) {
+                    window.location.href = '/'
+                    return
+                  }
+                  setShowForm(false)
+                  setEditingSaleId(null)
+                }}
+              >
+                {isEditPage ? 'Cancelar edición' : 'Cerrar Formulario'}
+              </button>
+            </div>
 
           {isEditPage && editingSaleId && (
             <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '0.8rem' }}>
@@ -578,11 +603,11 @@ export default function PosDashboard({
 
             <div style={{ marginTop: '2rem' }}>
               <h3>Pagos</h3>
-              <div style={{ display: 'grid', gap: '1rem', marginTop: '1rem' }}>
+              <div style={{ display: 'grid', gap: '1rem', marginTop: '1rem' }} className="pos-payment-grid">
                 {pagos.map((pago, index) => (
                   <div
                     key={pago.id}
-                    style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) minmax(0, 1fr) auto', gap: '1rem', alignItems: 'end' }}
+                    className="pos-payment-row"
                   >
                     <div style={{ position: 'relative' }}>
                       <label className={styles.label}>Método de Pago {index + 1}</label>
@@ -718,43 +743,59 @@ export default function PosDashboard({
       )}
 
       {!isEditPage && (
-      <section className={`${styles.historySection} glass-panel animate-fade-in`} style={{ marginTop: '2rem' }}>
-        <h2>Historial de Ventas ({historicalSales.length})</h2>
-        <div className={styles.historyList}>
-          {historicalSales.map((sale) => (
-            <div key={sale.id} className={styles.historyItem}>
-              <div>
-                <strong>{sale.cliente_nombre || sale.client?.nombre || 'Cliente Anónimo'}</strong> (CI: {sale.cliente_cedula || sale.client?.cedula})
-                <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', marginTop: '0.2rem' }}>
-                  {new Date(sale.createdAt).toLocaleString('es-CO', { timeZone: 'America/Bogota' })}
-                  {sale.createdBy && <span style={{ marginLeft: '0.5rem', opacity: 0.7 }}> creado por: <strong style={{ color: 'var(--accent-secondary)' }}>{getAdminName(sale.createdBy)}</strong></span>}
-                  {' • '}
-                  Venta con {sale.items.length} ítems
-                  {sale.vendedor_nombre && ` • Vendido por: ${sale.vendedor_nombre}`}
+        <section className={`${styles.historySection} glass-panel animate-fade-in pos-history-section`} style={{ flex: 1 }}>
+          <h2>Historial de Ventas ({historicalSales.length})</h2>
+          <div className={styles.historyList}>
+            {historicalSales.map((sale) => (
+              <div key={sale.id} className={styles.historyItem}>
+                <div>
+                  <strong>{sale.cliente_nombre || sale.client?.nombre || 'Cliente Anónimo'}</strong> (CI: {sale.cliente_cedula || sale.client?.cedula})
+                  <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', marginTop: '0.2rem' }}>
+                    {new Date(sale.createdAt).toLocaleString('es-CO', { timeZone: 'America/Bogota' })}
+                    {sale.createdBy && <span style={{ marginLeft: '0.5rem', opacity: 0.7 }}> creado por: <strong style={{ color: 'var(--accent-secondary)' }}>{getAdminName(sale.createdBy)}</strong></span>}
+                    {' • '}
+                    Venta con {sale.items.length} ítems
+                    {sale.vendedor_nombre && ` • Vendido por: ${sale.vendedor_nombre}`}
+                  </div>
+                  {sale.transactions?.length > 0 && (
+                    <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', marginTop: '0.35rem' }}>
+                      Pagos: {sale.transactions.map((transaction) => `${transaction.paymentMethod?.nombre || 'Método'} $${Number(transaction.monto || 0).toFixed(2)}`).join(' • ')}
+                    </div>
+                  )}
+                  {sale.observaciones && (
+                    <div style={{ fontSize: '0.85rem', color: 'var(--accent-secondary)', fontStyle: 'italic', marginTop: '0.2rem' }}>
+                      "{sale.observaciones}"
+                    </div>
+                  )}
                 </div>
-                {sale.transactions?.length > 0 && (
-                  <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', marginTop: '0.35rem' }}>
-                    Pagos: {sale.transactions.map((transaction) => `${transaction.paymentMethod?.nombre || 'Método'} $${Number(transaction.monto || 0).toFixed(2)}`).join(' • ')}
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap', justifyContent: 'flex-end' }}>
+                  <div className={styles.toggleWrapper}>
+                    <label className={styles.toggleSwitch}>
+                      <input
+                        type="checkbox"
+                        checked={sale.facturada}
+                        readOnly
+                        onClick={() => requestToggleFacturada(sale)}
+                      />
+                      <span className={styles.toggleSlider} />
+                    </label>
+                    <span style={{ color: sale.facturada ? 'var(--accent-primary)' : 'var(--text-secondary)', fontWeight: 700, fontSize: '0.95rem' }}>
+                      {sale.facturada ? 'Facturada' : 'Pendiente'}
+                    </span>
                   </div>
-                )}
-                {sale.observaciones && (
-                  <div style={{ fontSize: '0.85rem', color: 'var(--accent-secondary)', fontStyle: 'italic', marginTop: '0.2rem' }}>
-                    "{sale.observaciones}"
+                  <div style={{ fontWeight: 'bold', color: 'var(--accent-primary)', fontSize: '1.1rem' }}>
+                    ${sale.total.toFixed(2)}
                   </div>
-                )}
+                  <button
+                    type="button"
+                    className={styles.buttonOutline}
+                    style={{ padding: '0.4rem 0.9rem', fontSize: '0.85rem' }}
+                    onClick={() => setSalePendingEdit(sale)}
+                  >
+                    Editar
+                  </button>
+                </div>
               </div>
-              <div style={{ fontWeight: 'bold', color: 'var(--accent-primary)', fontSize: '1.1rem' }}>
-                ${sale.total.toFixed(2)}
-              </div>
-              <button
-                type="button"
-                className={styles.buttonOutline}
-                style={{ marginLeft: '1rem', padding: '0.4rem 0.9rem', fontSize: '0.85rem' }}
-                onClick={() => setSalePendingEdit(sale)}
-              >
-                Editar
-              </button>
-            </div>
           ))}
           {historicalSales.length === 0 && <p style={{ color: 'var(--text-secondary)' }}>No hay ventas registradas aún.</p>}
         </div>
@@ -807,6 +848,62 @@ export default function PosDashboard({
                 style={{ padding: '0.55rem 1rem' }}
               >
                 Abrir edición
+              </button>
+            </div>
+          </div>
+        </div>,
+        document.body
+      )}
+
+      {salePendingToggle && isMounted && createPortal(
+        <div
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            width: '100vw',
+            height: '100vh',
+            background: 'rgba(0, 0, 0, 0.82)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 99999,
+            padding: '1rem',
+          }}
+        >
+          <div
+            className="glass-panel"
+            style={{
+              width: '100%',
+              maxWidth: '520px',
+              padding: '1.5rem',
+              border: '1px solid var(--glass-border)',
+              boxShadow: '0 20px 60px rgba(0,0,0,0.35)',
+            }}
+          >
+            <h3 style={{ marginTop: 0, marginBottom: '0.6rem', color: 'var(--accent-primary)' }}>
+              Confirmar estado de factura
+            </h3>
+            <p style={{ margin: 0, color: 'var(--text-secondary)', lineHeight: 1.45 }}>
+              ¿Deseas marcar la venta de <strong>{salePendingToggle.sale.cliente_nombre || salePendingToggle.sale.client?.nombre || 'Cliente Anónimo'}</strong> como <strong>{salePendingToggle.nextState ? 'facturada' : 'no facturada'}</strong>?
+            </p>
+            <div style={{ marginTop: '1.2rem', display: 'flex', justifyContent: 'flex-end', gap: '0.7rem', flexWrap: 'wrap' }}>
+              <button
+                type="button"
+                className={styles.buttonOutline}
+                onClick={() => setSalePendingToggle(null)}
+                style={{ padding: '0.55rem 1rem' }}
+              >
+                Cancelar
+              </button>
+              <button
+                type="button"
+                className={`${styles.button} ${salePendingToggle.nextState ? styles.buttonPrimary : styles.buttonDanger}`}
+                onClick={confirmToggleFacturada}
+                style={{ padding: '0.55rem 1rem' }}
+                disabled={isTogglePending}
+              >
+                {isTogglePending ? 'Procesando...' : salePendingToggle.nextState ? 'Marcar facturada' : 'Marcar no facturada'}
               </button>
             </div>
           </div>
@@ -868,6 +965,7 @@ export default function PosDashboard({
         </div>,
         document.body
       )}
+      </div>
     </div>
   )
 }

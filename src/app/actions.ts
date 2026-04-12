@@ -131,6 +131,21 @@ export async function createSale(formData: CreateSaleInput) {
   return sale
 }
 
+export async function toggleSaleInvoiced(saleId: string, facturada: boolean) {
+  const adminId = await getAdminId()
+
+  const sale = await prisma.sale.update({
+    where: { id: saleId },
+    data: {
+      facturada,
+      updatedBy: adminId,
+    },
+  })
+
+  revalidatePath('/')
+  return sale
+}
+
 export async function updateSale(saleId: string, formData: CreateSaleInput) {
   const adminId = await getAdminId()
   const { cedula, nombre, telefono, correo, items, pagos, observaciones, vendedor_nombre } = formData
