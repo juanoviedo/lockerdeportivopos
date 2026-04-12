@@ -4,12 +4,10 @@ import { useState } from 'react'
 import { login } from '@/app/auth.actions'
 import styles from '@/app/page.module.css'
 import Link from 'next/link'
-import { useRouter } from 'next/navigation'
 
 export default function LoginPage() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
-  const router = useRouter()
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
@@ -21,8 +19,6 @@ export default function LoginPage() {
       const res = await login(formData)
       if (res?.error) {
         setError(res.error)
-      } else if (res?.success) {
-        router.push('/admin')
       }
     } catch (err: any) {
       setError(err.message)
