@@ -656,29 +656,31 @@ export default function PosDashboard({
                         </ul>
                       )}
                     </div>
-                    <div>
-                      <label className={styles.label}>Valor</label>
-                      <input
-                        className={styles.input}
-                        style={{ width: '100%' }}
-                        type="number"
-                        min="0"
-                        step="0.01"
-                        required={index === 0}
-                        placeholder="0.00"
-                        value={pago.valor}
-                        onChange={(e) => updatePayment(pago.id, 'valor', e.target.value ? parseFloat(e.target.value) : '')}
-                      />
+                    <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'end' }}>
+                      <div style={{ flex: 1 }}>
+                        <label className={styles.label}>Valor</label>
+                        <input
+                          className={styles.input}
+                          style={{ width: '100%' }}
+                          type="number"
+                          min="0"
+                          step="0.01"
+                          required={index === 0}
+                          placeholder="0.00"
+                          value={pago.valor}
+                          onChange={(e) => updatePayment(pago.id, 'valor', e.target.value ? parseFloat(e.target.value) : '')}
+                        />
+                      </div>
+                      <button
+                        type="button"
+                        className={`${styles.button} ${styles.buttonDanger}`}
+                        onClick={() => removePaymentRow(pago.id)}
+                        disabled={pagos.length === 1}
+                        style={{ height: 'fit-content', maxWidth: '80px' }}
+                      >
+                        X
+                      </button>
                     </div>
-                    <button
-                      type="button"
-                      className={`${styles.button} ${styles.buttonDanger}`}
-                      onClick={() => removePaymentRow(pago.id)}
-                      disabled={pagos.length === 1}
-                      style={{ height: 'fit-content' }}
-                    >
-                      X
-                    </button>
                   </div>
                 ))}
               </div>
@@ -742,7 +744,7 @@ export default function PosDashboard({
         </section>
       )}
 
-      {!isEditPage && (
+      {!isEditPage && !showForm && (
         <section className={`${styles.historySection} glass-panel animate-fade-in pos-history-section`} style={{ flex: 1 }}>
           <h2>Historial de Ventas ({historicalSales.length})</h2>
           <div className={styles.historyList}>

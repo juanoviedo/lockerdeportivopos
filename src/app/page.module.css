@@ -74,6 +74,24 @@
     text-align: center !important;
   }
   
+  .pos-payment-row {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 0.75rem !important;
+    align-items: stretch !important;
+  }
+  
+  .pos-payment-row input, .pos-payment-row select {
+    width: 100% !important;
+  }
+  
+  .pos-payment-row button {
+    padding: 0.25rem 0.5rem !important;
+    font-size: 0.8rem !important;
+    min-width: auto !important;
+    max-width: 80px !important;
+  }
+  
   .paymentGrid {
     grid-template-columns: 1fr;
   }
@@ -301,7 +319,7 @@
 /* Items Grid */
 .itemsHeader {
   display: grid;
-  grid-template-columns: 2fr 1fr 1fr 1fr auto;
+  grid-template-columns: 3fr 1fr 1fr 1fr auto;
   gap: 1rem;
   padding-bottom: 0.5rem;
   border-bottom: 1px solid var(--glass-border);
@@ -311,7 +329,7 @@
 
 .itemRow {
   display: grid;
-  grid-template-columns: 2fr 1fr 1fr 1fr auto;
+  grid-template-columns: 3fr 1fr 1fr 1fr auto;
   gap: 1rem;
   align-items: center;
   margin-top: 1rem;
@@ -324,7 +342,7 @@
 
 .pos-payment-row {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) auto;
+  grid-template-columns: 1fr 1fr;
   gap: 1rem;
   align-items: end;
 }
