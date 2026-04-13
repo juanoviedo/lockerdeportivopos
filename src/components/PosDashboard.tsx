@@ -4,7 +4,7 @@ import { useEffect, useState, useTransition } from 'react'
 import { createPortal } from 'react-dom'
 import { useRouter } from 'next/navigation'
 import styles from '@/app/page.module.css'
-import { createSale, deleteSale, updateSale, toggleSaleInvoiced } from '@/app/actions'
+import { createSale, deleteSale, updateSale, toggleSaleInvoiced, toggleSalePaid } from '@/app/actions'
 import type { HistoricalSale } from '@/lib/types'
 
 type PosDashboardProps = {
@@ -16,6 +16,8 @@ type PosDashboardProps = {
   admins?: { id: string; nombre: string }[]
   initialEditSaleId?: string
   isEditPage?: boolean
+  startDate?: Date
+  endDate?: Date
 }
 
 type SaleItemState = {
@@ -40,6 +42,8 @@ export default function PosDashboard({
   admins,
   initialEditSaleId,
   isEditPage = false,
+  startDate,
+  endDate,
 }: PosDashboardProps) {
   const [showForm, setShowForm] = useState(isEditPage)
   const [focusedRowId, setFocusedRowId] = useState<number | null>(null)
@@ -47,21 +51,29 @@ export default function PosDashboard({
   const [focusedSeller, setFocusedSeller] = useState(false)
   const [focusedPaymentId, setFocusedPaymentId] = useState<number | null>(null)
 
-  const [cedula, setCedula] = useState('')
+  const [cedula, setCedula] = useState('2222222')
   const [nombre, setNombre] = useState('')
   const [telefono, setTelefono] = useState('')
   const [correo, setCorreo] = useState('')
   const [vendedorNombre, setVendedorNombre] = useState('')
-  const [isNoCedula, setIsNoCedula] = useState(false)
+  const [showOtherData, setShowOtherData] = useState(false)
+  const [fechaVenta, setFechaVenta] = useState(() => new Date().toISOString().slice(0, 16))
+  const [pagado, setPagado] = useState(true)
+  const [isNoCedula, setIsNoCedula] = useState(true)
   const [loading, setLoading] = useState(false)
   const [observaciones, setObservaciones] = useState('')
   const [editingSaleId, setEditingSaleId] = useState<string | null>(null)
   const [salePendingEdit, setSalePendingEdit] = useState<HistoricalSale | null>(null)
   const [salePendingDeleteId, setSalePendingDeleteId] = useState<string | null>(null)
   const [salePendingToggle, setSalePendingToggle] = useState<{ sale: HistoricalSale; nextState: boolean } | null>(null)
+  const [salePendingTogglePagado, setSalePendingTogglePagado] = useState<{ sale: HistoricalSale; nextState: boolean } | null>(null)
   const [isMounted, setIsMounted] = useState(false)
   const [isTogglePending, startTransition] = useTransition()
   const router = useRouter()
+
+  // Date filter states
+  const [filterStartDate, setFilterStartDate] = useState(() => startDate ? startDate.toISOString().slice(0, 10) : new Date().toISOString().slice(0, 10))
+  const [filterEndDate, setFilterEndDate] = useState(() => endDate ? endDate.toISOString().slice(0, 10) : new Date().toISOString().slice(0, 10))
 
   const [items, setItems] = useState<SaleItemState[]>([
     { id: 1, nombre: '', cantidad: 1, precio_unitario: 0 },
@@ -71,6 +83,44 @@ export default function PosDashboard({
     { id: 1, metodoPagoId: '', valor: '' },
   ])
 
+  const [prevTotalVenta, setPrevTotalVenta] = useState(0)
+
+  const totalVenta = items.reduce((acc, item) => acc + item.cantidad * item.precio_unitario, 0)
+  const totalPagos = pagos.reduce(
+    (acc, pago) => acc + (typeof pago.valor === 'number' ? pago.valor : parseFloat(pago.valor || '0') || 0),
+    0
+  )
+  const pagosValidos = pagos.filter((pago) => {
+    const valor = typeof pago.valor === 'number' ? pago.valor : parseFloat(pago.valor || '0') || 0
+    return pago.metodoPagoId && valor > 0
+  })
+  const pagosMatch = Math.abs(totalVenta - totalPagos) < 0.01
+
+  useEffect(() => {
+    if (Math.abs(totalVenta - prevTotalVenta) > 0.001) {
+      setPagos((prev) => {
+        if (prev.length === 1) {
+          return [{ ...prev[0], valor: totalVenta > 0 ? totalVenta : '' }]
+        } else if (prev.length > 1) {
+          const tempPagos = [...prev]
+          const allExceptLast = tempPagos.slice(0, -1)
+          const sumExceptLast = allExceptLast.reduce(
+            (acc, pago) => acc + (typeof pago.valor === 'number' ? pago.valor : parseFloat(pago.valor || '0') || 0),
+            0
+          )
+          const remainder = totalVenta - sumExceptLast
+          tempPagos[tempPagos.length - 1] = {
+            ...tempPagos[tempPagos.length - 1],
+            valor: remainder > 0 ? remainder : '',
+          }
+          return tempPagos
+        }
+        return prev
+      })
+      setPrevTotalVenta(totalVenta)
+    }
+  }, [totalVenta, prevTotalVenta])
+
   const filteredClients = allClients.filter((client) =>
     client.cedula.toLowerCase().includes(cedula.toLowerCase())
   )
@@ -79,6 +129,7 @@ export default function PosDashboard({
     if (isNoCedula) {
       setCedula('')
       setIsNoCedula(false)
+      setShowOtherData(false)
       return
     }
 
@@ -86,7 +137,11 @@ export default function PosDashboard({
     setNombre('')
     setTelefono('')
     setCorreo('')
+    setVendedorNombre('')
+    setFechaVenta(new Date().toISOString().slice(0, 16))
+    setPagado(true)
     setIsNoCedula(true)
+    setShowOtherData(false)
   }
 
   const addItemRow = () => {
@@ -108,7 +163,14 @@ export default function PosDashboard({
   }
 
   const addPaymentRow = () => {
-    setPagos((prev) => [...prev, { id: Date.now(), metodoPagoId: '', valor: '' }])
+    setPagos((prev) => {
+      const prevTotalPagos = prev.reduce(
+        (acc, pago) => acc + (typeof pago.valor === 'number' ? pago.valor : parseFloat(pago.valor || '0') || 0),
+        0
+      )
+      const remainder = totalVenta - prevTotalPagos
+      return [...prev, { id: Date.now(), metodoPagoId: '', valor: remainder > 0 ? remainder : '' }]
+    })
   }
 
   const removePaymentRow = (id: number) => {
@@ -125,16 +187,7 @@ export default function PosDashboard({
     setPagos((prev) => prev.map((pago) => pago.id === id ? { ...pago, [field]: value } : pago))
   }
 
-  const totalVenta = items.reduce((acc, item) => acc + item.cantidad * item.precio_unitario, 0)
-  const totalPagos = pagos.reduce(
-    (acc, pago) => acc + (typeof pago.valor === 'number' ? pago.valor : parseFloat(pago.valor || '0') || 0),
-    0
-  )
-  const pagosValidos = pagos.filter((pago) => {
-    const valor = typeof pago.valor === 'number' ? pago.valor : parseFloat(pago.valor || '0') || 0
-    return pago.metodoPagoId && valor > 0
-  })
-  const pagosMatch = Math.abs(totalVenta - totalPagos) < 0.01
+  // Calculation variables moved up
 
   const getAdminName = (adminId: string) => {
     if (!admins) return 'Desconocido'
@@ -165,6 +218,33 @@ export default function PosDashboard({
     })
   }
 
+  const requestTogglePagado = (sale: HistoricalSale) => {
+    setSalePendingTogglePagado({ sale, nextState: !Boolean(sale.pagado) })
+  }
+
+  const confirmTogglePagado = async () => {
+    if (!salePendingTogglePagado) return
+
+    const { sale, nextState } = salePendingTogglePagado
+
+    startTransition(async () => {
+      try {
+        await toggleSalePaid(sale.id, nextState)
+        setSalePendingTogglePagado(null)
+        router.refresh()
+      } catch (error: any) {
+        alert('No se pudo actualizar el estado de pago: ' + (error?.message || error))
+      }
+    })
+  }
+
+  const applyDateFilter = () => {
+    const params = new URLSearchParams()
+    if (filterStartDate) params.set('startDate', filterStartDate)
+    if (filterEndDate) params.set('endDate', filterEndDate)
+    router.push(`/?${params.toString()}`)
+  }
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setLoading(true)
@@ -185,6 +265,8 @@ export default function PosDashboard({
         })),
         observaciones,
         vendedor_nombre: vendedorNombre,
+        fecha_venta: fechaVenta,
+        pagado,
       }
 
       if (editingSaleId) {
@@ -193,12 +275,15 @@ export default function PosDashboard({
         await createSale(payload)
       }
 
-      setCedula('')
+      setCedula('2222222')
       setNombre('')
       setTelefono('')
       setCorreo('')
       setVendedorNombre('')
-      setIsNoCedula(false)
+      setShowOtherData(false)
+      setFechaVenta(new Date().toISOString().slice(0, 16))
+      setPagado(true)
+      setIsNoCedula(true)
       setObservaciones('')
       setEditingSaleId(null)
       setItems([{ id: Date.now(), nombre: '', cantidad: 1, precio_unitario: 0 }])
@@ -222,7 +307,21 @@ export default function PosDashboard({
     setTelefono(sale.client?.telefono || '')
     setCorreo(sale.client?.correo || '')
     setVendedorNombre(sale.vendedor_nombre || '')
-    setIsNoCedula((sale.cliente_cedula || sale.client?.cedula || '') === '2222222')
+    const isDefaultClient = (sale.cliente_cedula || sale.client?.cedula || '') === '2222222'
+    setIsNoCedula(isDefaultClient)
+    setShowOtherData(
+      !!(
+        sale.vendedor_nombre ||
+        sale.pagado ||
+        sale.fecha_venta ||
+        sale.cliente_nombre ||
+        sale.client?.nombre ||
+        sale.client?.telefono ||
+        sale.client?.correo
+      )
+    )
+    setFechaVenta(sale.fecha_venta ? new Date(sale.fecha_venta).toISOString().slice(0, 16) : new Date().toISOString().slice(0, 16))
+    setPagado(Boolean(sale.pagado))
     setObservaciones(sale.observaciones || '')
 
     const mappedItems = sale.items.map((item) => ({
@@ -265,6 +364,11 @@ export default function PosDashboard({
   useEffect(() => {
     setIsMounted(true)
   }, [])
+
+  useEffect(() => {
+    if (startDate) setFilterStartDate(startDate.toISOString().slice(0, 10))
+    if (endDate) setFilterEndDate(endDate.toISOString().slice(0, 10))
+  }, [startDate, endDate])
 
   useEffect(() => {
     if (!initialEditSaleId) return
@@ -402,77 +506,120 @@ export default function PosDashboard({
                 </div>
               </div>
 
-              <div className={styles.formGroup}>
-                <label>Nombre Completo</label>
-                <input type="text" className={styles.input} value={nombre} onChange={(e) => setNombre(e.target.value)} placeholder="Ej: Juan Pérez" />
+              <div style={{ gridColumn: '1 / -1', display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                <input
+                  id="showOtherData"
+                  type="checkbox"
+                  checked={showOtherData}
+                  onChange={(e) => setShowOtherData(e.target.checked)}
+                />
+                <label htmlFor="showOtherData" style={{ cursor: 'pointer', fontWeight: 600, color: 'var(--text-secondary)' }}>
+                  Otros datos
+                </label>
               </div>
 
-              <div className={styles.formGroup}>
-                <label>Teléfono</label>
-                <input type="text" className={styles.input} value={telefono} onChange={(e) => setTelefono(e.target.value)} placeholder="099..." />
-              </div>
+              {showOtherData && (
+                <>
+                  <div className={styles.formGroup}>
+                    <label>Nombre Completo</label>
+                    <input type="text" className={styles.input} value={nombre} onChange={(e) => setNombre(e.target.value)} placeholder="Ej: Juan Pérez" />
+                  </div>
 
-              <div className={styles.formGroup}>
-                <label>Correo Electrónico</label>
-                <input type="email" className={styles.input} value={correo} onChange={(e) => setCorreo(e.target.value)} placeholder="juan@ejemplo.com" />
-              </div>
+                  <div className={styles.formGroup}>
+                    <label>Teléfono</label>
+                    <input type="text" className={styles.input} value={telefono} onChange={(e) => setTelefono(e.target.value)} placeholder="099..." />
+                  </div>
 
-              <div className={styles.formGroup}>
-                <label>Vendedor Asignado</label>
-                <div style={{ position: 'relative' }}>
-                  <input
-                    type="text"
-                    className={styles.input}
-                    style={{ width: '100%' }}
-                    value={vendedorNombre}
-                    onChange={(e) => setVendedorNombre(e.target.value)}
-                    onFocus={() => setFocusedSeller(true)}
-                    onBlur={() => setTimeout(() => setFocusedSeller(false), 200)}
-                    placeholder="Ej: Marcos D."
-                    required
-                  />
-                  {focusedSeller && allSellers && (
-                    <ul
-                      style={{
-                        position: 'absolute',
-                        top: '100%',
-                        left: 0,
-                        width: '100%',
-                        maxHeight: '200px',
-                        overflowY: 'auto',
-                        background: 'var(--surface)',
-                        border: '1px solid var(--glass-border)',
-                        borderRadius: 'var(--radius-md)',
-                        zIndex: 50,
-                        padding: 0,
-                        margin: '4px 0 0',
-                        listStyle: 'none',
-                        boxShadow: 'var(--shadow-md)',
-                      }}
-                    >
-                      {allSellers
-                        .filter((seller) => 
-                          vendedorNombre 
-                            ? seller.nombre.toLowerCase().includes(vendedorNombre.toLowerCase())
-                            : true
-                        )
-                        .map((seller) => (
-                          <li
-                            key={seller.id}
-                            style={{ padding: '0.75rem 1rem', cursor: 'pointer', borderBottom: '1px solid rgba(255,255,255,0.05)' }}
-                            onMouseDown={(e) => {
-                              e.preventDefault()
-                              setVendedorNombre(seller.nombre)
-                              setFocusedSeller(false)
-                            }}
-                          >
-                            {seller.nombre}
-                          </li>
-                        ))}
-                    </ul>
-                  )}
-                </div>
-              </div>
+                  <div className={styles.formGroup}>
+                    <label>Correo Electrónico</label>
+                    <input type="email" className={styles.input} value={correo} onChange={(e) => setCorreo(e.target.value)} placeholder="juan@ejemplo.com" />
+                  </div>
+
+                  <div className={styles.formGroup}>
+                    <label>Vendedor Asignado</label>
+                    <div style={{ position: 'relative' }}>
+                      <input
+                        type="text"
+                        className={styles.input}
+                        style={{ width: '100%' }}
+                        value={vendedorNombre}
+                        onChange={(e) => setVendedorNombre(e.target.value)}
+                        onFocus={() => setFocusedSeller(true)}
+                        onBlur={() => setTimeout(() => setFocusedSeller(false), 200)}
+                        placeholder="Ej: Marcos D."
+                      />
+                      {focusedSeller && allSellers && (
+                        <ul
+                          style={{
+                            position: 'absolute',
+                            top: '100%',
+                            left: 0,
+                            width: '100%',
+                            maxHeight: '200px',
+                            overflowY: 'auto',
+                            background: 'var(--surface)',
+                            border: '1px solid var(--glass-border)',
+                            borderRadius: 'var(--radius-md)',
+                            zIndex: 50,
+                            padding: 0,
+                            margin: '4px 0 0',
+                            listStyle: 'none',
+                            boxShadow: 'var(--shadow-md)',
+                          }}
+                        >
+                          {allSellers
+                            .filter((seller) => 
+                              vendedorNombre 
+                                ? seller.nombre.toLowerCase().includes(vendedorNombre.toLowerCase())
+                                : true
+                            )
+                            .map((seller) => (
+                              <li
+                                key={seller.id}
+                                style={{ padding: '0.75rem 1rem', cursor: 'pointer', borderBottom: '1px solid rgba(255,255,255,0.05)' }}
+                                onMouseDown={(e) => {
+                                  e.preventDefault()
+                                  setVendedorNombre(seller.nombre)
+                                  setFocusedSeller(false)
+                                }}
+                              >
+                                {seller.nombre}
+                              </li>
+                            ))}
+                        </ul>
+                      )}
+                    </div>
+                  </div>
+
+                  <div className={styles.formGroup}>
+                    <label>Fecha de Venta</label>
+                    <input
+                      className={styles.input}
+                      type="datetime-local"
+                      value={fechaVenta}
+                      onChange={(e) => setFechaVenta(e.target.value)}
+                      style={{ width: '100%' }}
+                    />
+                  </div>
+
+                  <div className={styles.formGroup} style={{ marginTop: '0.75rem' }}>
+                    <div className={styles.toggleWrapper}>
+                      <label className={styles.toggleSwitch}>
+                        <input
+                          id="pagado"
+                          type="checkbox"
+                          checked={pagado}
+                          onChange={(e) => setPagado(e.target.checked)}
+                        />
+                        <span className={styles.toggleSlider} />
+                      </label>
+                      <span style={{ color: pagado ? 'var(--accent-primary)' : 'var(--text-secondary)', fontWeight: 700, fontSize: '0.95rem' }}>
+                        {pagado ? 'Pagado' : 'Pendiente'}
+                      </span>
+                    </div>
+                  </div>
+                </>
+              )}
             </div>
 
             <hr style={{ borderColor: 'var(--glass-border)', margin: '2rem 0' }} />
@@ -603,13 +750,13 @@ export default function PosDashboard({
 
             <div style={{ marginTop: '2rem' }}>
               <h3>Pagos</h3>
-              <div style={{ display: 'grid', gap: '1rem', marginTop: '1rem' }} className="pos-payment-grid">
+              <div style={{ display: 'grid', gap: '1rem', marginTop: '1rem' }} className={styles['pos-payment-grid']}>
                 {pagos.map((pago, index) => (
                   <div
                     key={pago.id}
-                    className="pos-payment-row"
+                    className={styles['pos-payment-row']}
                   >
-                    <div style={{ position: 'relative' }}>
+                    <div style={{ position: 'relative', flex: 1 }}>
                       <label className={styles.label}>Método de Pago {index + 1}</label>
                       <input
                         className={styles.input}
@@ -656,7 +803,7 @@ export default function PosDashboard({
                         </ul>
                       )}
                     </div>
-                    <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'end' }}>
+                    <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'end', flex: 1 }}>
                       <div style={{ flex: 1 }}>
                         <label className={styles.label}>Valor</label>
                         <input
@@ -746,6 +893,36 @@ export default function PosDashboard({
 
       {!isEditPage && !showForm && (
         <section className={`${styles.historySection} glass-panel animate-fade-in pos-history-section`} style={{ flex: 1 }}>
+          <div style={{ display: 'flex', gap: '1rem', alignItems: 'center', marginBottom: '1rem', flexWrap: 'wrap' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
+              <label style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', fontWeight: 600 }}>Fecha Inicio</label>
+              <input
+                type="date"
+                value={filterStartDate}
+                onChange={(e) => setFilterStartDate(e.target.value)}
+                className={styles.input}
+                style={{ width: 'auto', minWidth: '140px' }}
+              />
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
+              <label style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', fontWeight: 600 }}>Fecha Fin</label>
+              <input
+                type="date"
+                value={filterEndDate}
+                onChange={(e) => setFilterEndDate(e.target.value)}
+                className={styles.input}
+                style={{ width: 'auto', minWidth: '140px' }}
+              />
+            </div>
+            <button
+              type="button"
+              className={`${styles.button} ${styles.buttonPrimary}`}
+              onClick={applyDateFilter}
+              style={{ alignSelf: 'flex-end', padding: '0.625rem 1rem' }}
+            >
+              Filtrar
+            </button>
+          </div>
           <h2>Historial de Ventas ({historicalSales.length})</h2>
           <div className={styles.historyList}>
             {historicalSales.map((sale) => (
@@ -753,7 +930,7 @@ export default function PosDashboard({
                 <div>
                   <strong>{sale.cliente_nombre || sale.client?.nombre || 'Cliente Anónimo'}</strong> (CI: {sale.cliente_cedula || sale.client?.cedula})
                   <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', marginTop: '0.2rem' }}>
-                    {new Date(sale.createdAt).toLocaleString('es-CO', { timeZone: 'America/Bogota' })}
+                    {new Date(sale.fecha_venta || sale.createdAt).toLocaleString('es-CO', { timeZone: 'America/Bogota' })}
                     {sale.createdBy && <span style={{ marginLeft: '0.5rem', opacity: 0.7 }}> creado por: <strong style={{ color: 'var(--accent-secondary)' }}>{getAdminName(sale.createdBy)}</strong></span>}
                     {' • '}
                     Venta con {sale.items.length} ítems
@@ -775,6 +952,20 @@ export default function PosDashboard({
                     <label className={styles.toggleSwitch}>
                       <input
                         type="checkbox"
+                        checked={Boolean(sale.pagado)}
+                        readOnly
+                        onClick={() => requestTogglePagado(sale)}
+                      />
+                      <span className={styles.toggleSlider} />
+                    </label>
+                    <span style={{ color: Boolean(sale.pagado) ? 'var(--accent-primary)' : 'var(--text-secondary)', fontWeight: 700, fontSize: '0.95rem' }}>
+                      {Boolean(sale.pagado) ? 'pagado' : 'debe'}
+                    </span>
+                  </div>
+                  <div className={styles.toggleWrapper}>
+                    <label className={styles.toggleSwitch}>
+                      <input
+                        type="checkbox"
                         checked={sale.facturada}
                         readOnly
                         onClick={() => requestToggleFacturada(sale)}
@@ -782,7 +973,7 @@ export default function PosDashboard({
                       <span className={styles.toggleSlider} />
                     </label>
                     <span style={{ color: sale.facturada ? 'var(--accent-primary)' : 'var(--text-secondary)', fontWeight: 700, fontSize: '0.95rem' }}>
-                      {sale.facturada ? 'Facturada' : 'Pendiente'}
+                      {sale.facturada ? 'facturado' : 'no fact'}
                     </span>
                   </div>
                   <div style={{ fontWeight: 'bold', color: 'var(--accent-primary)', fontSize: '1.1rem' }}>
@@ -884,10 +1075,10 @@ export default function PosDashboard({
             }}
           >
             <h3 style={{ marginTop: 0, marginBottom: '0.6rem', color: 'var(--accent-primary)' }}>
-              Confirmar estado de factura
+              Confirmar estado de pago
             </h3>
             <p style={{ margin: 0, color: 'var(--text-secondary)', lineHeight: 1.45 }}>
-              ¿Deseas marcar la venta de <strong>{salePendingToggle.sale.cliente_nombre || salePendingToggle.sale.client?.nombre || 'Cliente Anónimo'}</strong> como <strong>{salePendingToggle.nextState ? 'facturada' : 'no facturada'}</strong>?
+              ¿Deseas marcar la venta de <strong>{salePendingToggle.sale.cliente_nombre || salePendingToggle.sale.client?.nombre || 'Cliente Anónimo'}</strong> como <strong>{salePendingToggle.nextState ? 'pagada' : 'pendiente de pago'}</strong>?
             </p>
             <div style={{ marginTop: '1.2rem', display: 'flex', justifyContent: 'flex-end', gap: '0.7rem', flexWrap: 'wrap' }}>
               <button
@@ -905,7 +1096,63 @@ export default function PosDashboard({
                 style={{ padding: '0.55rem 1rem' }}
                 disabled={isTogglePending}
               >
-                {isTogglePending ? 'Procesando...' : salePendingToggle.nextState ? 'Marcar facturada' : 'Marcar no facturada'}
+                {isTogglePending ? 'Procesando...' : salePendingToggle.nextState ? 'Marcar pagada' : 'Marcar pendiente'}
+              </button>
+            </div>
+          </div>
+        </div>,
+        document.body
+      )}
+
+      {salePendingTogglePagado && isMounted && createPortal(
+        <div
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            width: '100vw',
+            height: '100vh',
+            background: 'rgba(0, 0, 0, 0.82)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 99999,
+            padding: '1rem',
+          }}
+        >
+          <div
+            className="glass-panel"
+            style={{
+              width: '100%',
+              maxWidth: '520px',
+              padding: '1.5rem',
+              border: '1px solid var(--glass-border)',
+              boxShadow: '0 20px 60px rgba(0,0,0,0.35)',
+            }}
+          >
+            <h3 style={{ marginTop: 0, marginBottom: '0.6rem', color: 'var(--accent-primary)' }}>
+              Confirmar estado de pago
+            </h3>
+            <p style={{ margin: 0, color: 'var(--text-secondary)', lineHeight: 1.45 }}>
+              ¿Deseas marcar la venta de <strong>{salePendingTogglePagado.sale.cliente_nombre || salePendingTogglePagado.sale.client?.nombre || 'Cliente Anónimo'}</strong> como <strong>{salePendingTogglePagado.nextState ? 'pagada' : 'pendiente de pago'}</strong>?
+            </p>
+            <div style={{ marginTop: '1.2rem', display: 'flex', justifyContent: 'flex-end', gap: '0.7rem', flexWrap: 'wrap' }}>
+              <button
+                type="button"
+                className={styles.buttonOutline}
+                onClick={() => setSalePendingTogglePagado(null)}
+                style={{ padding: '0.55rem 1rem' }}
+              >
+                Cancelar
+              </button>
+              <button
+                type="button"
+                className={`${styles.button} ${salePendingTogglePagado.nextState ? styles.buttonPrimary : styles.buttonDanger}`}
+                onClick={confirmTogglePagado}
+                style={{ padding: '0.55rem 1rem' }}
+                disabled={isTogglePending}
+              >
+                {isTogglePending ? 'Procesando...' : salePendingTogglePagado.nextState ? 'Marcar pagada' : 'Marcar pendiente'}
               </button>
             </div>
           </div>

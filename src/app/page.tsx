@@ -4,10 +4,51 @@ import prisma from '@/lib/prisma'
 
 export const dynamic = 'force-dynamic'
 
-export default async function Home() {
+export default async function Home(props: { searchParams: Promise<{ [key: string]: string | string[] | undefined }> }) {
+  const searchParams = await props.searchParams;
+  // Parse dates from search params or default to today in Colombia timezone (UTC-5)
+  const now = new Date()
+  const colombiaOffset = -5 * 60 * 60 * 1000 // UTC-5 in milliseconds
+  const colombiaNow = new Date(now.getTime() + colombiaOffset)
+  
+  const defaultStartDate = new Date(colombiaNow.getFullYear(), colombiaNow.getMonth(), colombiaNow.getDate())
+  const defaultEndDate = new Date(defaultStartDate.getTime() + 24 * 60 * 60 * 1000 - 1)
+  
+  const startDateParam = searchParams?.startDate as string
+  const endDateParam = searchParams?.endDate as string
+  const startDate = startDateParam ? new Date(startDateParam) : defaultStartDate
+  const endDate = endDateParam ? new Date(new Date(endDateParam).getTime() + 24 * 60 * 60 * 1000 - 1) : defaultEndDate
+
+  // Convert dates from Colombia time to UTC for database query
+  // Notice that new Date('YYYY-MM-DD') creates a date at midnight UTC.
+  // We subtract the Colombia offset to effectively treat that midnight as Colombia midnight, converting it to UTC database time.
+  const utcStartDate = new Date(startDate.getTime() - colombiaOffset)
+  const utcEndDate = new Date(endDate.getTime() - colombiaOffset)
+
   const sales = await prisma.sale.findMany({
+    where: {
+      OR: [
+        {
+          fecha_venta: {
+            gte: utcStartDate,
+            lte: utcEndDate,
+          },
+        },
+        {
+          AND: [
+            { fecha_venta: { equals: null } },
+            {
+              createdAt: {
+                gte: utcStartDate,
+                lte: utcEndDate,
+              },
+            },
+          ],
+        },
+      ],
+    },
     orderBy: { createdAt: 'desc' },
-    take: 15,
+    take: 50, // Increased limit for filtered results
     include: {
       client: true,
       items: {
@@ -64,6 +105,8 @@ export default async function Home() {
         allSellers={sellers}
         paymentMethods={paymentMethods}
         admins={admins}
+        startDate={startDate}
+        endDate={endDate}
       />
     </main>
   )

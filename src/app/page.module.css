@@ -491,3 +491,9 @@
     font-size: 16px; /* Prevents zoom on iOS */
   }
 }
+
+@media (min-width: 769px) {
+  .pos-payment-row {
+    flex-direction: row !important;
+  }
+}

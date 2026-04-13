@@ -18,37 +18,95 @@ async function main() {
 
   try {
     for (const a of data.admins) {
-      await prisma.admin.create({ data: { ...a, updatedAt: new Date() } })
+      await prisma.admin.upsert({
+        where: { id: a.id },
+        update: { ...a, updatedAt: new Date() },
+        create: { ...a, updatedAt: new Date() }
+      })
     }
     for (const c of data.clients) {
-      await prisma.client.create({ data: { ...c, updatedAt: new Date() } })
+      await prisma.client.upsert({
+        where: { id: c.id },
+        update: { ...c, updatedAt: new Date() },
+        create: { ...c, updatedAt: new Date() }
+      })
     }
     for (const p of data.products) {
-      await prisma.product.create({ data: { ...p, updatedAt: new Date() } })
+      await prisma.product.upsert({
+        where: { id: p.id },
+        update: { ...p, updatedAt: new Date() },
+        create: { ...p, updatedAt: new Date() }
+      })
     }
     for (const s of data.sellers) {
-      await prisma.seller.create({ data: { ...s, updatedAt: new Date() } })
+      await prisma.seller.upsert({
+        where: { id: s.id },
+        update: { ...s, updatedAt: new Date() },
+        create: { ...s, updatedAt: new Date() }
+      })
     }
     for (const pm of data.paymentMethods) {
-      await prisma.paymentMethod.create({ data: { ...pm, updatedAt: new Date() } })
+      await prisma.paymentMethod.upsert({
+        where: { id: pm.id },
+        update: { ...pm, updatedAt: new Date() },
+        create: { ...pm, updatedAt: new Date() }
+      })
     }
     for (const sale of data.sales) {
       const items = sale.items
+      const paymentMethods = []
+      
+      // Handle old payment method fields
+      if (sale.metodo_pago_1 && sale.valor_pago_1) {
+        paymentMethods.push({
+          metodo: sale.metodo_pago_1,
+          valor: sale.valor_pago_1
+        })
+      }
+      if (sale.metodo_pago_2 && sale.valor_pago_2) {
+        paymentMethods.push({
+          metodo: sale.metodo_pago_2,
+          valor: sale.valor_pago_2
+        })
+      }
+      
       delete sale.items
-      await prisma.sale.create({
+      delete sale.metodo_pago_1
+      delete sale.valor_pago_1
+      delete sale.metodo_pago_2
+      delete sale.valor_pago_2
+      
+      const createdSale = await prisma.sale.create({
         data: {
           ...sale,
           updatedAt: new Date(),
           items: {
             create: items.map(i => ({
               ...i,
-              id: undefined, // let it auto-generate due to relation
-              ventaId: undefined, // relation automatically connects
+              id: undefined,
+              ventaId: undefined,
               updatedAt: new Date()
             }))
           }
         }
       })
+      
+      // Create transactions for payment methods
+      for (const payment of paymentMethods) {
+        const paymentMethod = await prisma.paymentMethod.findFirst({
+          where: { nombre: payment.metodo }
+        })
+        if (paymentMethod) {
+          await prisma.transaction.create({
+            data: {
+              ventaId: createdSale.id,
+              paymentMethodId: paymentMethod.id,
+              monto: payment.valor,
+              updatedAt: new Date()
+            }
+          })
+        }
+      }
     }
     console.log("¡Restauración Mágica Completada con Éxito!")
   } catch (err) {

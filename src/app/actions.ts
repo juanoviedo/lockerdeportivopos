@@ -19,7 +19,7 @@ async function getAdminId() {
 
 export async function createSale(formData: CreateSaleInput) {
   const adminId = await getAdminId()
-  const { cedula, nombre, telefono, correo, items, pagos, observaciones, vendedor_nombre } = formData
+  const { cedula, nombre, telefono, correo, items, pagos, observaciones, vendedor_nombre, fecha_venta, pagado } = formData
 
   if (!items || items.length === 0) {
     throw new Error('La venta debe tener al menos un ítem.')
@@ -95,8 +95,6 @@ export async function createSale(formData: CreateSaleInput) {
     throw new Error('La suma de los pagos no coincide con el total de la venta.')
   }
 
-  const primerPago = pagosValidos[0] ?? null
-  const segundoPago = pagosValidos[1] ?? null
 
   const sale = await prisma.sale.create({
     data: {
@@ -106,11 +104,10 @@ export async function createSale(formData: CreateSaleInput) {
       sellerId: sellerObj?.id || null,
       vendedor_nombre: sellerObj?.nombre || null,
       total: totalVenta,
-      metodo_pago_1: primerPago?.metodoPagoId || null,
-      valor_pago_1: primerPago?.valor || null,
-      metodo_pago_2: segundoPago?.metodoPagoId || null,
-      valor_pago_2: segundoPago?.valor || null,
+
       observaciones: observaciones || null,
+      fecha_venta: fecha_venta ? new Date(fecha_venta) : new Date(),
+      pagado: Boolean(pagado),
       createdBy: adminId,
       updatedBy: adminId,
       items: {
@@ -128,6 +125,11 @@ export async function createSale(formData: CreateSaleInput) {
   })
 
   revalidatePath('/')
+  revalidatePath('/admin')
+  revalidatePath('/admin/clientes')
+  revalidatePath('/admin/productos')
+  revalidatePath('/admin/vendedores')
+  revalidatePath('/admin/transacciones')
   return sale
 }
 
@@ -143,12 +145,37 @@ export async function toggleSaleInvoiced(saleId: string, facturada: boolean) {
   })
 
   revalidatePath('/')
+  revalidatePath('/admin')
+  revalidatePath('/admin/clientes')
+  revalidatePath('/admin/productos')
+  revalidatePath('/admin/vendedores')
+  revalidatePath('/admin/transacciones')
+  return sale
+}
+
+export async function toggleSalePaid(saleId: string, pagado: boolean) {
+  const adminId = await getAdminId()
+
+  const sale = await prisma.sale.update({
+    where: { id: saleId },
+    data: {
+      pagado,
+      updatedBy: adminId,
+    },
+  })
+
+  revalidatePath('/')
+  revalidatePath('/admin')
+  revalidatePath('/admin/clientes')
+  revalidatePath('/admin/productos')
+  revalidatePath('/admin/vendedores')
+  revalidatePath('/admin/transacciones')
   return sale
 }
 
 export async function updateSale(saleId: string, formData: CreateSaleInput) {
   const adminId = await getAdminId()
-  const { cedula, nombre, telefono, correo, items, pagos, observaciones, vendedor_nombre } = formData
+  const { cedula, nombre, telefono, correo, items, pagos, observaciones, vendedor_nombre, fecha_venta, pagado } = formData
 
   if (!items || items.length === 0) {
     throw new Error('La venta debe tener al menos un ítem.')
@@ -229,8 +256,6 @@ export async function updateSale(saleId: string, formData: CreateSaleInput) {
     throw new Error('La suma de los pagos no coincide con el total de la venta.')
   }
 
-  const primerPago = pagosValidos[0] ?? null
-  const segundoPago = pagosValidos[1] ?? null
 
   const sale = await prisma.sale.update({
     where: { id: saleId },
@@ -241,11 +266,10 @@ export async function updateSale(saleId: string, formData: CreateSaleInput) {
       sellerId: sellerObj?.id || null,
       vendedor_nombre: sellerObj?.nombre || null,
       total: totalVenta,
-      metodo_pago_1: primerPago?.metodoPagoId || null,
-      valor_pago_1: primerPago?.valor || null,
-      metodo_pago_2: segundoPago?.metodoPagoId || null,
-      valor_pago_2: segundoPago?.valor || null,
+
       observaciones: observaciones || null,
+      fecha_venta: fecha_venta ? new Date(fecha_venta) : undefined,
+      pagado: Boolean(pagado),
       updatedBy: adminId,
       items: {
         deleteMany: {},
@@ -264,6 +288,11 @@ export async function updateSale(saleId: string, formData: CreateSaleInput) {
   })
 
   revalidatePath('/')
+  revalidatePath('/admin')
+  revalidatePath('/admin/clientes')
+  revalidatePath('/admin/productos')
+  revalidatePath('/admin/vendedores')
+  revalidatePath('/admin/transacciones')
   return sale
 }
 
@@ -280,6 +309,11 @@ export async function deleteSale(saleId: string) {
     })
   })
   revalidatePath('/')
+  revalidatePath('/admin')
+  revalidatePath('/admin/clientes')
+  revalidatePath('/admin/productos')
+  revalidatePath('/admin/vendedores')
+  revalidatePath('/admin/transacciones')
 }
 
 export async function updateClient(id: string, data: ClientFormData) {

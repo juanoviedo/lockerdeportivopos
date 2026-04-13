@@ -1,0 +1,330 @@
+{
+  "timestamp": "2026-04-13T15:29:19.266Z",
+  "environment": "local",
+  "admins": [
+    {
+      "id": "cmnnp1tc80000w90k0g5vwndb",
+      "nombre": "Admin Principal",
+      "email": "admin@pos.com",
+      "password": "$2b$10$gfIjn.6h6aNhACV8rp0.oOxEqcHQz.J.jc9pJHTgTJVvaHXU59fCi",
+      "resetToken": null,
+      "resetTokenExpiry": null,
+      "createdAt": "2026-04-06T21:20:00.968Z",
+      "updatedAt": "2026-04-13T15:25:30.839Z",
+      "createdBy": null,
+      "updatedBy": null
+    },
+    {
+      "id": "cmnxch05e0000w9v0caiozf36",
+      "nombre": "Administrador Local",
+      "email": "admin@deportespos.local",
+      "password": "$2b$10$8RTnBcc5yUKuvDZLqJdLKOAJg6YRn3fFHa0aQUp1M.hfx1dFK50zq",
+      "resetToken": null,
+      "resetTokenExpiry": null,
+      "createdAt": "2026-04-13T15:25:36.387Z",
+      "updatedAt": "2026-04-13T15:25:36.387Z",
+      "createdBy": null,
+      "updatedBy": null
+    }
+  ],
+  "clients": [
+    {
+      "id": "cmnnmnwax0002w9a0v611gttq",
+      "cedula": "1107066464",
+      "nombre": "Juan Manuel Oviedo Lutkens",
+      "telefono": "3168314501",
+      "correo": "joviedo@pprocesses.onmicrosoft.com",
+      "createdAt": "2026-04-06T20:13:12.393Z",
+      "updatedAt": "2026-04-13T15:25:30.881Z",
+      "createdBy": null,
+      "updatedBy": null
+    },
+    {
+      "id": "cmnnmrcpm0003w9a0cye1jkb8",
+      "cedula": "1144075881",
+      "nombre": "Alexandra Peña Yepes",
+      "telefono": "3002374114",
+      "correo": "alexandrayepe23@hotmail.com",
+      "createdAt": "2026-04-06T20:15:53.626Z",
+      "updatedAt": "2026-04-13T15:25:30.882Z",
+      "createdBy": null,
+      "updatedBy": null
+    },
+    {
+      "id": "cmnxch05y000cw9v07uwkj4vq",
+      "cedula": "1234567890",
+      "nombre": "Cliente de Prueba",
+      "telefono": "3001234567",
+      "correo": "cliente@example.com",
+      "createdAt": "2026-04-13T15:25:36.406Z",
+      "updatedAt": "2026-04-13T15:25:36.406Z",
+      "createdBy": null,
+      "updatedBy": null
+    }
+  ],
+  "products": [
+    {
+      "id": "cmnnmm13z0000w9a085539a9u",
+      "nombre": "Uniforme Brasil Talla XL",
+      "precio": 60000,
+      "precio_minimo": 50000,
+      "createdAt": "2026-04-06T20:11:45.310Z",
+      "updatedAt": "2026-04-13T15:25:30.883Z",
+      "createdBy": null,
+      "updatedBy": null
+    },
+    {
+      "id": "cmnnmmv9t0001w9a0yzgr9duh",
+      "nombre": "Uniforme Alemania Talla XL",
+      "precio": 60000,
+      "precio_minimo": 50000,
+      "createdAt": "2026-04-06T20:12:24.402Z",
+      "updatedAt": "2026-04-13T15:25:30.884Z",
+      "createdBy": null,
+      "updatedBy": null
+    },
+    {
+      "id": "cmnnmw9ga0007w9a0svtma465",
+      "nombre": "Uniforme Argentina Talla XL",
+      "precio": 60000,
+      "precio_minimo": 50000,
+      "createdAt": "2026-04-06T20:19:42.683Z",
+      "updatedAt": "2026-04-13T15:25:30.885Z",
+      "createdBy": null,
+      "updatedBy": null
+    },
+    {
+      "id": "cmnxch05s0008w9v06c1kppmr",
+      "nombre": "Camiseta Deportiva",
+      "precio": 50000,
+      "precio_minimo": 40000,
+      "createdAt": "2026-04-13T15:25:36.401Z",
+      "updatedAt": "2026-04-13T15:25:36.401Z",
+      "createdBy": null,
+      "updatedBy": null
+    },
+    {
+      "id": "cmnxch05u0009w9v0zbs3swuu",
+      "nombre": "Shorts",
+      "precio": 35000,
+      "precio_minimo": 28000,
+      "createdAt": "2026-04-13T15:25:36.402Z",
+      "updatedAt": "2026-04-13T15:25:36.402Z",
+      "createdBy": null,
+      "updatedBy": null
+    },
+    {
+      "id": "cmnxch05v000aw9v0r0fhyurv",
+      "nombre": "Zapatillas",
+      "precio": 120000,
+      "precio_minimo": 100000,
+      "createdAt": "2026-04-13T15:25:36.403Z",
+      "updatedAt": "2026-04-13T15:25:36.403Z",
+      "createdBy": null,
+      "updatedBy": null
+    },
+    {
+      "id": "cmnxch05w000bw9v0g8hgbnyq",
+      "nombre": "Calcetines (3pares)",
+      "precio": 20000,
+      "precio_minimo": 15000,
+      "createdAt": "2026-04-13T15:25:36.404Z",
+      "updatedAt": "2026-04-13T15:25:36.404Z",
+      "createdBy": null,
+      "updatedBy": null
+    }
+  ],
+  "sellers": [
+    {
+      "id": "cmnnmaubm0000w9xs2yv37wjz",
+      "nombre": "Alexandra Peña",
+      "createdAt": "2026-04-06T20:03:03.297Z",
+      "updatedAt": "2026-04-13T15:25:30.885Z",
+      "createdBy": null,
+      "updatedBy": null
+    },
+    {
+      "id": "cmnnmbqot0001w9xs36myv0xn",
+      "nombre": "Ricardo Peña",
+      "createdAt": "2026-04-06T20:03:45.245Z",
+      "updatedAt": "2026-04-13T15:25:30.887Z",
+      "createdBy": null,
+      "updatedBy": null
+    },
+    {
+      "id": "cmnnms0me0004w9a0fuabf28u",
+      "nombre": "Isabella",
+      "createdAt": "2026-04-06T20:16:24.615Z",
+      "updatedAt": "2026-04-13T15:25:30.887Z",
+      "createdBy": null,
+      "updatedBy": null
+    },
+    {
+      "id": "cmnnms7pc0005w9a00y4apfrm",
+      "nombre": "Daniel",
+      "createdAt": "2026-04-06T20:16:33.792Z",
+      "updatedAt": "2026-04-13T15:25:30.888Z",
+      "createdBy": null,
+      "updatedBy": null
+    },
+    {
+      "id": "cmnnmsd9u0006w9a0jq9wmdgb",
+      "nombre": "Jennifer",
+      "createdAt": "2026-04-06T20:16:41.010Z",
+      "updatedAt": "2026-04-13T15:25:30.889Z",
+      "createdBy": null,
+      "updatedBy": null
+    },
+    {
+      "id": "cmnxch05o0005w9v0qo5ttovm",
+      "nombre": "Vendedor 1",
+      "createdAt": "2026-04-13T15:25:36.396Z",
+      "updatedAt": "2026-04-13T15:25:36.396Z",
+      "createdBy": null,
+      "updatedBy": null
+    },
+    {
+      "id": "cmnxch05p0006w9v07o58xnhf",
+      "nombre": "Vendedor 2",
+      "createdAt": "2026-04-13T15:25:36.398Z",
+      "updatedAt": "2026-04-13T15:25:36.398Z",
+      "createdBy": null,
+      "updatedBy": null
+    },
+    {
+      "id": "cmnxch05q0007w9v0e5wxu4nt",
+      "nombre": "Vendedor 3",
+      "createdAt": "2026-04-13T15:25:36.399Z",
+      "updatedAt": "2026-04-13T15:25:36.399Z",
+      "createdBy": null,
+      "updatedBy": null
+    }
+  ],
+  "paymentMethods": [
+    {
+      "id": "cmnnnyqsd0000w910gekdh892",
+      "nombre": "Tarjeta de Credito",
+      "createdAt": "2026-04-06T20:49:38.077Z",
+      "updatedAt": "2026-04-13T15:25:30.890Z",
+      "createdBy": null,
+      "updatedBy": null
+    },
+    {
+      "id": "cmnxch05i0001w9v05mwd8kb3",
+      "nombre": "Efectivo",
+      "createdAt": "2026-04-13T15:25:36.390Z",
+      "updatedAt": "2026-04-13T15:25:36.390Z",
+      "createdBy": null,
+      "updatedBy": null
+    },
+    {
+      "id": "cmnxch05j0002w9v0ph30o7da",
+      "nombre": "Tarjeta de Crédito",
+      "createdAt": "2026-04-13T15:25:36.392Z",
+      "updatedAt": "2026-04-13T15:25:36.392Z",
+      "createdBy": null,
+      "updatedBy": null
+    },
+    {
+      "id": "cmnxch05k0003w9v0tvo49n1l",
+      "nombre": "Tarjeta de Débito",
+      "createdAt": "2026-04-13T15:25:36.393Z",
+      "updatedAt": "2026-04-13T15:25:36.393Z",
+      "createdBy": null,
+      "updatedBy": null
+    },
+    {
+      "id": "cmnxch05m0004w9v0msvbz58u",
+      "nombre": "Transferencia",
+      "createdAt": "2026-04-13T15:25:36.394Z",
+      "updatedAt": "2026-04-13T15:25:36.394Z",
+      "createdBy": null,
+      "updatedBy": null
+    }
+  ],
+  "sales": [
+    {
+      "id": "cmnnmw9gd0009w9a0wkgpb8i1",
+      "clientId": "cmnnmnwax0002w9a0v611gttq",
+      "cliente_cedula": "1107066464",
+      "cliente_nombre": "Juan Manuel Oviedo Lutkens",
+      "sellerId": "cmnnms0me0004w9a0fuabf28u",
+      "vendedor_nombre": "Isabella",
+      "total": 50000,
+      "facturada": false,
+      "observaciones": null,
+      "fecha_venta": "2026-04-13T15:25:30.892Z",
+      "pagado": false,
+      "createdAt": "2026-04-06T20:19:42.686Z",
+      "updatedAt": "2026-04-13T15:25:30.891Z",
+      "createdBy": null,
+      "updatedBy": null,
+      "items": [
+        {
+          "id": "cmnxcgvwt0001w92ow1i651f6",
+          "ventaId": "cmnnmw9gd0009w9a0wkgpb8i1",
+          "productId": "cmnnmw9ga0007w9a0svtma465",
+          "cantidad": 1,
+          "precio_unitario": 50000,
+          "subtotal": 50000,
+          "createdAt": "2026-04-13T15:25:30.892Z",
+          "updatedAt": "2026-04-13T15:25:30.891Z",
+          "createdBy": null,
+          "updatedBy": null
+        }
+      ],
+      "transactions": []
+    },
+    {
+      "id": "cmnnnyqsm0002w910lcvzptpd",
+      "clientId": "cmnnmnwax0002w9a0v611gttq",
+      "cliente_cedula": "1107066464",
+      "cliente_nombre": "Juan Manuel Oviedo Lutkens",
+      "sellerId": "cmnnms0me0004w9a0fuabf28u",
+      "vendedor_nombre": "Isabella",
+      "total": 55000,
+      "facturada": false,
+      "observaciones": null,
+      "fecha_venta": "2026-04-13T15:25:30.902Z",
+      "pagado": false,
+      "createdAt": "2026-04-06T20:49:38.085Z",
+      "updatedAt": "2026-04-13T15:25:30.901Z",
+      "createdBy": null,
+      "updatedBy": null,
+      "items": [
+        {
+          "id": "cmnxcgvx20003w92ozejx9hpt",
+          "ventaId": "cmnnnyqsm0002w910lcvzptpd",
+          "productId": "cmnnmw9ga0007w9a0svtma465",
+          "cantidad": 1,
+          "precio_unitario": 55000,
+          "subtotal": 55000,
+          "createdAt": "2026-04-13T15:25:30.902Z",
+          "updatedAt": "2026-04-13T15:25:30.901Z",
+          "createdBy": null,
+          "updatedBy": null
+        }
+      ],
+      "transactions": [
+        {
+          "id": "cmnxcgvx40005w92ovmpwsmud",
+          "ventaId": "cmnnnyqsm0002w910lcvzptpd",
+          "paymentMethodId": "cmnnnyqsd0000w910gekdh892",
+          "monto": 55000,
+          "createdAt": "2026-04-13T15:25:30.905Z",
+          "updatedAt": "2026-04-13T15:25:30.903Z",
+          "createdBy": null,
+          "updatedBy": null,
+          "paymentMethod": {
+            "id": "cmnnnyqsd0000w910gekdh892",
+            "nombre": "Tarjeta de Credito",
+            "createdAt": "2026-04-06T20:49:38.077Z",
+            "updatedAt": "2026-04-13T15:25:30.890Z",
+            "createdBy": null,
+            "updatedBy": null
+          }
+        }
+      ]
+    }
+  ]
+}

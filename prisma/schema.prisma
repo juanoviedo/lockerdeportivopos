@@ -77,11 +77,9 @@ model Sale {
   vendedor_nombre String?
   total           Float         @default(0)
   facturada       Boolean       @default(false)
-  metodo_pago_1   String?
-  valor_pago_1    Float?
-  metodo_pago_2   String?
-  valor_pago_2    Float?
   observaciones   String?
+  fecha_venta     DateTime?     @default(now())
+  pagado          Boolean       @default(false)
   items           SaleItem[]
   transactions    Transaction[]
   createdAt       DateTime      @default(now())

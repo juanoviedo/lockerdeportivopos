@@ -4,17 +4,6 @@ function formatCurrency(value: number) {
   return new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 2 }).format(value)
 }
 
-function toLocalIsoDate(date: Date) {
-  const localDate = new Date(date.getTime() - date.getTimezoneOffset() * 60000)
-  return localDate.toISOString().slice(0, 10)
-}
-
-function parseDateInput(value?: string) {
-  if (!value || !/^\d{4}-\d{2}-\d{2}$/.test(value)) return null
-  const date = new Date(`${value}T00:00:00`)
-  return Number.isNaN(date.getTime()) ? null : date
-}
-
 export default async function AdminDashboardPage({
   searchParams,
 }: {
@@ -22,47 +11,58 @@ export default async function AdminDashboardPage({
 }) {
   const params = (await searchParams) || {}
   const today = new Date()
-  today.setHours(0, 0, 0, 0)
-  const todayStr = toLocalIsoDate(today)
+  const colombiaOffset = -5 * 60 * 60 * 1000 // UTC-5 in milliseconds
 
-  const parsedStart = parseDateInput(params.startDate)
-  const parsedEnd = parseDateInput(params.endDate)
+  const colombiaNow = new Date(today.getTime() + colombiaOffset)
+  const todayStr = colombiaNow.toISOString().slice(0, 10)
 
-  let startDate = parsedStart ?? today
-  let endDate = parsedEnd ?? today
+  let startDateStr = params.startDate || todayStr
+  let endDateStr = params.endDate || todayStr
   let validationMessage = ''
 
-  if (startDate > today) {
-    startDate = today
+  if (startDateStr > todayStr) {
+    startDateStr = todayStr
     validationMessage = 'La fecha inicial no puede estar en el futuro. Se ajustó al día actual.'
   }
 
-  if (endDate > today) {
-    endDate = today
+  if (endDateStr > todayStr) {
+    endDateStr = todayStr
     validationMessage = 'La fecha final no puede estar en el futuro. Se ajustó al día actual.'
   }
 
-  if (startDate > endDate) {
-    startDate = today
-    endDate = today
+  if (startDateStr > endDateStr) {
+    startDateStr = todayStr
+    endDateStr = todayStr
     validationMessage = 'La fecha inicial no puede ser mayor que la fecha final. Se restauró al día actual.'
   }
 
-  const startDateStr = toLocalIsoDate(startDate)
-  const endDateStr = toLocalIsoDate(endDate)
-
-  const rangeStart = new Date(startDate)
-  rangeStart.setHours(0, 0, 0, 0)
-
-  const rangeEnd = new Date(endDate)
-  rangeEnd.setHours(23, 59, 59, 999)
+  // Adjust dates back to UTC for database query (since fecha_venta is stored in UTC)
+  // Parsing 'YYYY-MM-DD T00:00:00Z' gives us midnight UTC.
+  // We subtract the offset (UTC-5) to shift this to Colombia's midnight (which is 5AM UTC)
+  const rangeStart = new Date(new Date(`${startDateStr}T00:00:00Z`).getTime() - colombiaOffset)
+  const rangeEnd = new Date(new Date(`${endDateStr}T00:00:00Z`).getTime() + 24 * 60 * 60 * 1000 - 1 - colombiaOffset)
 
   const salesInRange = await prisma.sale.findMany({
     where: {
-      createdAt: {
-        gte: rangeStart,
-        lte: rangeEnd,
-      },
+      OR: [
+        {
+          fecha_venta: {
+            gte: rangeStart,
+            lte: rangeEnd,
+          },
+        },
+        {
+          AND: [
+            { fecha_venta: { equals: null } },
+            {
+              createdAt: {
+                gte: rangeStart,
+                lte: rangeEnd,
+              },
+            },
+          ],
+        },
+      ],
     },
     include: {
       transactions: {

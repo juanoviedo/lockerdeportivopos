@@ -35,10 +35,14 @@ export type CreateSaleInput = ClientFormData & {
   pagos: SalePaymentInput[]
   observaciones: string
   vendedor_nombre: string
+  fecha_venta: string
+  pagado: boolean
 }
 
 export type HistoricalSale = Sale & {
   client: Client | null
+  fecha_venta?: Date | null
+  pagado?: boolean | null
   items: Array<
     SaleItem & {
       product: Product | null
