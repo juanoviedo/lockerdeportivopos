@@ -47,7 +47,10 @@ export default async function Home(props: { searchParams: Promise<{ [key: string
         },
       ],
     },
-    orderBy: { createdAt: 'desc' },
+    orderBy: [
+      { fecha_venta: 'desc' },
+      { createdAt: 'desc' }
+    ],
     take: 50, // Increased limit for filtered results
     include: {
       client: true,

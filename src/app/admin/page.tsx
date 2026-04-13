@@ -71,9 +71,10 @@ export default async function AdminDashboardPage({
         },
       },
     },
-    orderBy: {
-      createdAt: 'desc',
-    },
+    orderBy: [
+      { fecha_venta: 'desc' },
+      { createdAt: 'desc' },
+    ],
   })
 
   const totalSalesCount = salesInRange.length
