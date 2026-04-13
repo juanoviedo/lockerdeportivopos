@@ -190,9 +190,18 @@ git push origin main
 
 #### 2. Deploy a Staging
 ```bash
-# Vercel detecta automáticamente el push a staging
+# Sube los cambios de código a la rama de staging
 npm run deploy:staging
 ```
+
+> [!IMPORTANT]
+> **Sincronización Segura de Base de Datos (Staging)**
+> Vercel **ya no migra la base de datos automáticamente** para evitar el borrado accidental de columnas. Si hiciste cambios en `schema.prisma` (como agregar o quitar campos), debes aplicarlos tú mismo de forma manual a la base de datos de Staging desde tu máquina local corriendo este comando en PowerShell:
+> 
+> ```powershell
+> $env:DATABASE_URL="postgresql://postgres.udqqlwpdmcigfrvmqjmc:LockerPos2026@aws-1-us-west-2.pooler.supabase.com:6543/postgres?pgbouncer=true"; $env:DIRECT_URL="postgresql://postgres.udqqlwpdmcigfrvmqjmc:LockerPos2026@aws-1-us-west-2.pooler.supabase.com:5432/postgres"; npx prisma db push --accept-data-loss
+> ```
+> *(Nota: El flag `--accept-data-loss` solo borra las columnas que explícitamente quitaste del `schema.prisma`, jamás borrará el resto de tablas o información).*
 
 #### 3. Testing en Staging
 - URL: `https://deportes-pos-staging.vercel.app`
@@ -201,21 +210,28 @@ npm run deploy:staging
 
 #### 4. Deploy a Producción
 ```bash
-# Solo después de validar staging
+# Sube la versión validada a la rama principal (Production)
 npm run deploy:production
 ```
+
+> [!IMPORTANT]
+> **Sincronización Segura de Base de Datos (Producción)**
+> Al igual que en staging, si el código incluyó cambios en `schema.prisma`, debes sincronizar la base de datos real de Producción manualmente desde tu PC usando las credenciales exactas de Producción:
+> 
+> ```powershell
+> $env:DATABASE_URL="postgresql://postgres.qwbwpamuutknapyfbmeh:LockerPos2026@aws-1-us-west-2.pooler.supabase.com:6543/postgres?pgbouncer=true"; $env:DIRECT_URL="postgresql://postgres.qwbwpamuutknapyfbmeh:LockerPos2026@aws-1-us-west-2.pooler.supabase.com:5432/postgres"; npx prisma db push --accept-data-loss
+> ```
 
 #### 5. Verificación
 - URL: `https://deportes-pos.vercel.app`
 - Verifica logs en Vercel dashboard
-- Confirma que la base de datos está actualizada
+- Confirma que la base de datos se refleja correctamente sin caída de servicio
 
 ### ⚠️ Notas Importantes
 
 - **Nunca** hagas push directo a `main` sin pasar por staging
 - **Siempre** verifica staging antes de producción
-- Las **variables de ambiente** están separadas por rama en Vercel
-- **Base de datos** se migra automáticamente en cada deploy
+- **¡Tus despliegues ahora son seguros!** Ningún *push* de código alterará las bases de datos remotas. Tú tienes el control al 100% de cuándo ejecutar el `db push` para adaptar el esquema.
 
 ### Error: "table does not exist"
 ```bash
