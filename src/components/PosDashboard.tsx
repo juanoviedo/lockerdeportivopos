@@ -290,7 +290,7 @@ export default function PosDashboard({
       setPagos([{ id: Date.now(), metodoPagoId: '', valor: '' }])
       setShowForm(false)
       if (editingSaleId && isEditPage) {
-        window.location.href = '/'
+        router.push('/')
       }
     } catch (error: any) {
       console.error('Error:', error.message)
@@ -933,7 +933,7 @@ export default function PosDashboard({
                     {new Date(sale.fecha_venta || sale.createdAt).toLocaleString('es-CO', { timeZone: 'America/Bogota' })}
                     {sale.createdBy && <span style={{ marginLeft: '0.5rem', opacity: 0.7 }}> creado por: <strong style={{ color: 'var(--accent-secondary)' }}>{getAdminName(sale.createdBy)}</strong></span>}
                     {' • '}
-                    Venta con {sale.items.length} ítems
+                    Venta con {sale.items.length} {sale.items.length === 1 ? 'ítem' : 'ítems'}: {sale.items.map((item) => item.product?.nombre || 'Producto').join(', ')}
                     {sale.vendedor_nombre && ` • Vendido por: ${sale.vendedor_nombre}`}
                   </div>
                   {sale.transactions?.length > 0 && (
