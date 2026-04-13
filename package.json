@@ -3,14 +3,14 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "node backup_auto.js && next dev",
-    "dev:setup": "node backup_auto.js && prisma db push && npm run seed",
+    "dev": "next dev",
+    "dev:setup": "prisma db push && npm run seed",
     "seed": "node prisma/seed.js",
-    "build": "node backup_auto.js && prisma generate && next build",
+    "build": "prisma generate && next build",
     "start": "next start",
     "lint": "next lint",
     "tunnel": "npx localtunnel --port 3000",
-    "db:push": "node backup_auto.js && prisma db push",
+    "db:push": "prisma db push",
     "db:studio": "prisma studio",
     "prisma:generate": "prisma generate",
     "backup": "node backup_auto.js",
@@ -18,8 +18,8 @@
     "sync:production": "node sync_environments.js staging production",
     "sync:clear-staging": "node sync_environments.js local staging --clear",
     "sync:clear-production": "node sync_environments.js staging production --clear",
-    "deploy:staging": "npm run backup && git push origin main:staging",
-    "deploy:production": "npm run backup && git push origin main"
+    "deploy:staging": "git push origin main:staging",
+    "deploy:production": "git push origin main"
   },
   "dependencies": {
     "@prisma/client": "^6.19.3",
