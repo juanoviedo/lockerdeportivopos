@@ -33,6 +33,15 @@ type PagoState = {
   valor: number | ''
 }
 
+const formatCOP = (value: number) => {
+  return new Intl.NumberFormat('es-CO', {
+    style: 'currency',
+    currency: 'COP',
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0,
+  }).format(value)
+}
+
 export default function PosDashboard({
   historicalSales,
   allProducts,
@@ -1019,7 +1028,7 @@ export default function PosDashboard({
                     </span>
                   </div>
                   <div style={{ fontWeight: 'bold', color: 'var(--accent-primary)', fontSize: '1.1rem' }}>
-                    ${sale.total.toFixed(2)}
+                    ${formatCOP(sale.total)}
                   </div>
                   <div style={{ display: 'flex', gap: '0.4rem' }}>
                     <button
