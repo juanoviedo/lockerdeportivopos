@@ -4,7 +4,7 @@ import { jwtVerify } from 'jose'
 
 const JWT_SECRET = new TextEncoder().encode(process.env.JWT_SECRET || 'fallback-secret-pos-123')
 
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   const isAuthRoute = request.nextUrl.pathname.startsWith('/login')
   const isSetupRoute = request.nextUrl.pathname.startsWith('/setup') // By pass para setup inicial (si existiese)
 
