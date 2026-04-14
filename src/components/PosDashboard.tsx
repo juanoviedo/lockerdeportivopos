@@ -331,15 +331,15 @@ export default function PosDashboard({
     setPagado(Boolean(sale.pagado))
     setObservaciones(sale.observaciones || '')
 
-    const mappedItems = sale.items.map((item) => ({
-      id: Number(`${Date.now()}${Math.floor(Math.random() * 1000)}`),
+    const mappedItems = sale.items.map((item, index) => ({
+      id: Date.now() + index,
       nombre: item.product?.nombre || '',
       cantidad: Number(item.cantidad) || 1,
       precio_unitario: Number(item.precio_unitario) || 0,
     }))
 
-    const mappedPayments = (sale.transactions || []).map((transaction) => ({
-      id: Number(`${Date.now()}${Math.floor(Math.random() * 1000)}`),
+    const mappedPayments = (sale.transactions || []).map((transaction, index) => ({
+      id: Date.now() + index + 1000,
       metodoPagoId: transaction.paymentMethodId || '',
       valor: Number(transaction.monto) || 0,
     }))
@@ -359,7 +359,10 @@ export default function PosDashboard({
     try {
       await deleteSale(salePendingDeleteId)
       alert('Venta eliminada con éxito.')
-      window.location.href = '/'
+      startTransition(() => {
+        router.push('/')
+        router.refresh()
+      })
     } catch (error: any) {
       alert('Error al eliminar la venta: ' + error.message)
     } finally {
@@ -903,23 +906,55 @@ export default function PosDashboard({
           <div style={{ display: 'flex', gap: '1rem', alignItems: 'center', marginBottom: '1rem', flexWrap: 'wrap' }}>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
               <label style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', fontWeight: 600 }}>Fecha Inicio</label>
-              <input
-                type="date"
-                value={filterStartDate}
-                onChange={(e) => setFilterStartDate(e.target.value)}
-                className={styles.input}
-                style={{ width: 'auto', minWidth: '140px' }}
-              />
+              <div style={{ display: 'flex', alignItems: 'center' }}>
+                <button 
+                  type="button" 
+                  onClick={() => setFilterStartDate(new Date(new Date(filterStartDate).getTime() - 86400000).toISOString().slice(0, 10))}
+                  style={{ padding: '0.4rem 0.6rem', border: '1px solid var(--glass-border)', background: 'var(--surface)', borderRadius: 'var(--radius-sm) 0 0 var(--radius-sm)', cursor: 'pointer', color: 'var(--text-primary)' }}
+                >
+                  ◀
+                </button>
+                <input
+                  type="date"
+                  value={filterStartDate}
+                  onChange={(e) => setFilterStartDate(e.target.value)}
+                  className={styles.input}
+                  style={{ width: 'auto', minWidth: '140px', borderRadius: '0' }}
+                />
+                <button 
+                  type="button" 
+                  onClick={() => setFilterStartDate(new Date(new Date(filterStartDate).getTime() + 86400000).toISOString().slice(0, 10))}
+                  style={{ padding: '0.4rem 0.6rem', border: '1px solid var(--glass-border)', background: 'var(--surface)', borderRadius: '0 var(--radius-sm) var(--radius-sm) 0', cursor: 'pointer', color: 'var(--text-primary)' }}
+                >
+                  ▶
+                </button>
+              </div>
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
               <label style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', fontWeight: 600 }}>Fecha Fin</label>
-              <input
-                type="date"
-                value={filterEndDate}
-                onChange={(e) => setFilterEndDate(e.target.value)}
-                className={styles.input}
-                style={{ width: 'auto', minWidth: '140px' }}
-              />
+              <div style={{ display: 'flex', alignItems: 'center' }}>
+                <button 
+                  type="button" 
+                  onClick={() => setFilterEndDate(new Date(new Date(filterEndDate).getTime() - 86400000).toISOString().slice(0, 10))}
+                  style={{ padding: '0.4rem 0.6rem', border: '1px solid var(--glass-border)', background: 'var(--surface)', borderRadius: 'var(--radius-sm) 0 0 var(--radius-sm)', cursor: 'pointer', color: 'var(--text-primary)' }}
+                >
+                  ◀
+                </button>
+                <input
+                  type="date"
+                  value={filterEndDate}
+                  onChange={(e) => setFilterEndDate(e.target.value)}
+                  className={styles.input}
+                  style={{ width: 'auto', minWidth: '140px', borderRadius: '0' }}
+                />
+                <button 
+                  type="button" 
+                  onClick={() => setFilterEndDate(new Date(new Date(filterEndDate).getTime() + 86400000).toISOString().slice(0, 10))}
+                  style={{ padding: '0.4rem 0.6rem', border: '1px solid var(--glass-border)', background: 'var(--surface)', borderRadius: '0 var(--radius-sm) var(--radius-sm) 0', cursor: 'pointer', color: 'var(--text-primary)' }}
+                >
+                  ▶
+                </button>
+              </div>
             </div>
             <button
               type="button"
@@ -986,14 +1021,25 @@ export default function PosDashboard({
                   <div style={{ fontWeight: 'bold', color: 'var(--accent-primary)', fontSize: '1.1rem' }}>
                     ${sale.total.toFixed(2)}
                   </div>
-                  <button
-                    type="button"
-                    className={styles.buttonOutline}
-                    style={{ padding: '0.4rem 0.9rem', fontSize: '0.85rem' }}
-                    onClick={() => setSalePendingEdit(sale)}
-                  >
-                    Editar
-                  </button>
+                  <div style={{ display: 'flex', gap: '0.4rem' }}>
+                    <button
+                      type="button"
+                      className={styles.buttonOutline}
+                      style={{ padding: '0.4rem 0.9rem', fontSize: '0.85rem' }}
+                      onClick={() => setSalePendingEdit(sale)}
+                    >
+                      Editar
+                    </button>
+                    <button
+                      type="button"
+                      className={`${styles.buttonOutline} ${styles.buttonDanger}`}
+                      style={{ padding: '0.4rem 0.6rem', fontSize: '0.85rem' }}
+                      onClick={() => setSalePendingDeleteId(sale.id)}
+                      title="Eliminar Venta"
+                    >
+                      🗑️
+                    </button>
+                  </div>
                 </div>
               </div>
           ))}

@@ -13,16 +13,17 @@ export default async function TransaccionesPage({ searchParams }: PageProps) {
   const fechaFin = typeof searchParamsResolved.fechaFin === 'string' ? searchParamsResolved.fechaFin : undefined
   const paymentMethodId = typeof searchParamsResolved.paymentMethodId === 'string' ? searchParamsResolved.paymentMethodId : undefined
 
+  const colombiaOffset = -5 * 60 * 60 * 1000 // UTC-5
   const where: any = {}
-  if (fechaIni && fechaFin) {
-    where.createdAt = {
-      gte: new Date(fechaIni),
-      lte: new Date(fechaFin)
-    }
-  } else if (fechaIni) {
-    where.createdAt = { gte: new Date(fechaIni) }
-  } else if (fechaFin) {
-    where.createdAt = { lte: new Date(fechaFin) }
+  
+  if (fechaIni) {
+    const rangeStart = new Date(new Date(`${fechaIni}T00:00:00Z`).getTime() - colombiaOffset)
+    where.createdAt = { ...where.createdAt, gte: rangeStart }
+  }
+  
+  if (fechaFin) {
+    const rangeEnd = new Date(new Date(`${fechaFin}T00:00:00Z`).getTime() + 24 * 60 * 60 * 1000 - 1 - colombiaOffset)
+    where.createdAt = { ...where.createdAt, lte: rangeEnd }
   }
   if (paymentMethodId) {
     where.paymentMethodId = paymentMethodId

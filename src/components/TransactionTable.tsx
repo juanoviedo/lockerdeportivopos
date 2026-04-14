@@ -52,21 +52,55 @@ export default function TransactionTable({ transactions, paymentMethods }: Trans
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem', alignItems: 'end' }}>
           <div className={styles.formGroup}>
             <label style={{ color: 'var(--text-primary)' }}>Fecha Inicial</label>
-            <input
-              type="date"
-              className={styles.input}
-              value={fechaIni}
-              onChange={(e) => setFechaIni(e.target.value)}
-            />
+            <div style={{ display: 'flex', alignItems: 'center' }}>
+              <button 
+                type="button" 
+                onClick={() => setFechaIni(prev => prev ? new Date(new Date(prev).getTime() - 86400000).toISOString().slice(0, 10) : new Date(Date.now() - 86400000).toISOString().slice(0, 10))}
+                style={{ padding: '0.4rem 0.6rem', border: '1px solid var(--glass-border)', background: 'var(--surface)', borderRadius: 'var(--radius-sm) 0 0 var(--radius-sm)', cursor: 'pointer', color: 'var(--text-primary)' }}
+              >
+                ◀
+              </button>
+              <input
+                type="date"
+                className={styles.input}
+                value={fechaIni}
+                onChange={(e) => setFechaIni(e.target.value)}
+                style={{ borderRadius: '0' }}
+              />
+              <button 
+                type="button" 
+                onClick={() => setFechaIni(prev => prev ? new Date(new Date(prev).getTime() + 86400000).toISOString().slice(0, 10) : new Date(Date.now() + 86400000).toISOString().slice(0, 10))}
+                style={{ padding: '0.4rem 0.6rem', border: '1px solid var(--glass-border)', background: 'var(--surface)', borderRadius: '0 var(--radius-sm) var(--radius-sm) 0', cursor: 'pointer', color: 'var(--text-primary)' }}
+              >
+                ▶
+              </button>
+            </div>
           </div>
           <div className={styles.formGroup}>
             <label style={{ color: 'var(--text-primary)' }}>Fecha Final</label>
-            <input
-              type="date"
-              className={styles.input}
-              value={fechaFin}
-              onChange={(e) => setFechaFin(e.target.value)}
-            />
+            <div style={{ display: 'flex', alignItems: 'center' }}>
+              <button 
+                type="button" 
+                onClick={() => setFechaFin(prev => prev ? new Date(new Date(prev).getTime() - 86400000).toISOString().slice(0, 10) : new Date(Date.now() - 86400000).toISOString().slice(0, 10))}
+                style={{ padding: '0.4rem 0.6rem', border: '1px solid var(--glass-border)', background: 'var(--surface)', borderRadius: 'var(--radius-sm) 0 0 var(--radius-sm)', cursor: 'pointer', color: 'var(--text-primary)' }}
+              >
+                ◀
+              </button>
+              <input
+                type="date"
+                className={styles.input}
+                value={fechaFin}
+                onChange={(e) => setFechaFin(e.target.value)}
+                style={{ borderRadius: '0' }}
+              />
+              <button 
+                type="button" 
+                onClick={() => setFechaFin(prev => prev ? new Date(new Date(prev).getTime() + 86400000).toISOString().slice(0, 10) : new Date(Date.now() + 86400000).toISOString().slice(0, 10))}
+                style={{ padding: '0.4rem 0.6rem', border: '1px solid var(--glass-border)', background: 'var(--surface)', borderRadius: '0 var(--radius-sm) var(--radius-sm) 0', cursor: 'pointer', color: 'var(--text-primary)' }}
+              >
+                ▶
+              </button>
+            </div>
           </div>
           <div className={styles.formGroup}>
             <label style={{ color: 'var(--text-primary)' }}>Método de Pago</label>

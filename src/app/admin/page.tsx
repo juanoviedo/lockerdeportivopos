@@ -1,4 +1,5 @@
 import prisma from '@/lib/prisma'
+import AdminDateFilter from '@/components/AdminDateFilter'
 
 function formatCurrency(value: number) {
   return new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 2 }).format(value)
@@ -99,41 +100,7 @@ export default async function AdminDashboardPage({
       </p>
 
       <div className="glass-panel" style={{ padding: '1.25rem', marginBottom: '1.5rem' }}>
-        <form method="GET" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '0.9rem', alignItems: 'end' }}>
-          <div>
-            <label style={{ display: 'block', marginBottom: '0.4rem', color: 'var(--text-secondary)', fontSize: '0.9rem' }}>
-              Fecha inicio
-            </label>
-            <input
-              type="date"
-              name="startDate"
-              defaultValue={startDateStr}
-              max={todayStr}
-              style={{ width: '100%', padding: '0.6rem', borderRadius: 'var(--radius-md)', border: '1px solid var(--glass-border)', background: 'var(--surface)', color: 'var(--text-primary)' }}
-              required
-            />
-          </div>
-          <div>
-            <label style={{ display: 'block', marginBottom: '0.4rem', color: 'var(--text-secondary)', fontSize: '0.9rem' }}>
-              Fecha fin
-            </label>
-            <input
-              type="date"
-              name="endDate"
-              defaultValue={endDateStr}
-              min={startDateStr}
-              max={todayStr}
-              style={{ width: '100%', padding: '0.6rem', borderRadius: 'var(--radius-md)', border: '1px solid var(--glass-border)', background: 'var(--surface)', color: 'var(--text-primary)' }}
-              required
-            />
-          </div>
-          <button
-            type="submit"
-            style={{ padding: '0.65rem 1rem', borderRadius: 'var(--radius-md)', border: 'none', background: 'var(--accent-primary)', color: '#fff', fontWeight: 600, cursor: 'pointer' }}
-          >
-            Aplicar filtro
-          </button>
-        </form>
+        <AdminDateFilter defaultStart={startDateStr} defaultEnd={endDateStr} todayStr={todayStr} />
         <p style={{ margin: '0.8rem 0 0', color: 'var(--text-secondary)', fontSize: '0.9rem' }}>
           Mostrando datos desde <strong>{startDateStr}</strong> hasta <strong>{endDateStr}</strong>.
         </p>
