@@ -250,8 +250,14 @@ export default function PosDashboard({
     setLoading(true)
 
     try {
-      if (!cedula) return
-      if (pagosValidos.length === 0) return
+      if (!cedula) {
+        alert('Por favor ingrese la cédula del cliente.')
+        return
+      }
+      if (pagosValidos.length === 0) {
+        alert('Por favor ingrese al menos un método de pago válido.')
+        return
+      }
 
       const payload = {
         cedula,
@@ -294,6 +300,7 @@ export default function PosDashboard({
       }
     } catch (error: any) {
       console.error('Error:', error.message)
+      alert(error.message || 'Ocurrió un error al guardar la venta. Por favor revise los datos e intente de nuevo.')
     } finally {
       setLoading(false)
     }
