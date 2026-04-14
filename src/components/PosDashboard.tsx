@@ -1028,7 +1028,7 @@ export default function PosDashboard({
                     </span>
                   </div>
                   <div style={{ fontWeight: 'bold', color: 'var(--accent-primary)', fontSize: '1.1rem' }}>
-                    ${formatCOP(sale.total)}
+                    {formatCOP(sale.total)}
                   </div>
                   <div style={{ display: 'flex', gap: '0.4rem' }}>
                     <button
