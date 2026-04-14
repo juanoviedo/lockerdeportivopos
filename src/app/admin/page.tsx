@@ -1,5 +1,13 @@
+import { Suspense } from 'react'
 import prisma from '@/lib/prisma'
 import AdminDateFilter from '@/components/AdminDateFilter'
+import { SkeletonTable, SkeletonDashboardMetrics } from '@/components/Skeleton'
+import { PaymentMethodTableSuspense } from '@/components/PaymentMethodTable'
+
+// ISR: Revalidar la página cada 1 hora (3600 segundos)
+// Esto permite servir la página en caché desde la Edge Network de Vercel
+// mientras que en background se regenera con datos nuevos
+export const revalidate = 3600
 
 function formatCurrency(value: number) {
   return new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 2 }).format(value)
@@ -82,16 +90,6 @@ export default async function AdminDashboardPage({
   const totalSalesAmount = salesInRange.reduce((acc, sale) => acc + Number(sale.total || 0), 0)
   const averageTicket = totalSalesCount > 0 ? totalSalesAmount / totalSalesCount : 0
 
-  const paymentMethodTotals = salesInRange.reduce<Record<string, number>>((acc, sale) => {
-    for (const transaction of sale.transactions) {
-      const methodName = transaction.paymentMethod?.nombre || 'Sin método'
-      acc[methodName] = (acc[methodName] || 0) + Number(transaction.monto || 0)
-    }
-    return acc
-  }, {})
-
-  const paymentMethodRows = Object.entries(paymentMethodTotals).sort((a, b) => b[1] - a[1])
-
   return (
     <div className="animate-fade-in" style={{ maxWidth: '1200px', margin: '0 auto' }}>
       <h1 className="title-main" style={{ marginBottom: '0.5rem', fontSize: '2rem' }}>Centro de Control</h1>
@@ -126,40 +124,12 @@ export default async function AdminDashboardPage({
         </div>
       </div>
 
-      <div className="glass-panel" style={{ padding: '2rem' }}>
-        <h3 style={{ marginTop: 0, marginBottom: '0.3rem' }}>Ventas por método de pago</h3>
-        <p style={{ color: 'var(--text-secondary)', marginTop: 0, marginBottom: '1.25rem' }}>
-          Suma de todas las transacciones del rango, agrupadas por método de pago.
-        </p>
-
-        {paymentMethodRows.length === 0 ? (
-          <p style={{ color: 'var(--text-secondary)', margin: 0 }}>No hay ventas registradas en el rango seleccionado.</p>
-        ) : (
-          <div style={{ overflowX: 'auto' }}>
-            <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
-              <thead>
-                <tr style={{ borderBottom: '1px solid var(--glass-border)', color: 'var(--text-secondary)' }}>
-                  <th style={{ padding: '0.9rem 0.6rem' }}>Método</th>
-                  <th style={{ padding: '0.9rem 0.6rem', textAlign: 'right' }}>Total acumulado</th>
-                  <th style={{ padding: '0.9rem 0.6rem', textAlign: 'right' }}>% del total</th>
-                </tr>
-              </thead>
-              <tbody>
-                {paymentMethodRows.map(([methodName, amount]) => {
-                  const percentage = totalSalesAmount > 0 ? (amount / totalSalesAmount) * 100 : 0
-                  return (
-                    <tr key={methodName} style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
-                      <td style={{ padding: '0.85rem 0.6rem' }}>{methodName}</td>
-                      <td style={{ padding: '0.85rem 0.6rem', textAlign: 'right', fontWeight: 600 }}>{formatCurrency(amount)}</td>
-                      <td style={{ padding: '0.85rem 0.6rem', textAlign: 'right', color: 'var(--text-secondary)' }}>{percentage.toFixed(2)}%</td>
-                    </tr>
-                  )
-                })}
-              </tbody>
-            </table>
-          </div>
-        )}
-      </div>
+      {/* Tabla de métodos de pago envuelta en Suspense para mejor UX */}
+      <PaymentMethodTableSuspense
+        rangeStart={rangeStart}
+        rangeEnd={rangeEnd}
+        totalSalesAmount={totalSalesAmount}
+      />
     </div>
   )
 }

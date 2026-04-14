@@ -1,6 +1,10 @@
 import SellerCrud from '@/components/SellerCrud'
 import { PrismaClient } from '@prisma/client'
 
+// ISR: Revalidar cada 30 minutos (1800 segundos)
+// La lista de vendedores no cambia cada segundo, así que puede servirse en caché
+export const revalidate = 1800
+
 const prisma = new PrismaClient()
 
 export default async function AdminSellersPage() {

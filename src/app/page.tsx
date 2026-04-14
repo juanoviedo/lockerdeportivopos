@@ -1,8 +1,11 @@
 import Link from 'next/link'
+import { Suspense } from 'react'
 import PosDashboard from '@/components/PosDashboard'
 import prisma from '@/lib/prisma'
+import { SkeletonTable } from '@/components/Skeleton'
 
 export const dynamic = 'force-dynamic'
+export const revalidate = 300 // Revalidar cada 5 minutos para datos del POS
 
 export default async function Home(props: { searchParams: Promise<{ [key: string]: string | string[] | undefined }> }) {
   const searchParams = await props.searchParams;

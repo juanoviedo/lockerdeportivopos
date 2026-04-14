@@ -1,6 +1,10 @@
 import ClientCrud from '@/components/ClientCrud'
 import { PrismaClient } from '@prisma/client'
 
+// ISR: Revalidar cada 30 minutos (1800 segundos)
+// La lista de clientes no cambia cada segundo, así que puede servirse en caché
+export const revalidate = 1800
+
 // En desarrollo crear múltiples instancias arroja warning, 
 // pero se sigue la convención actual del proyecto
 const prisma = new PrismaClient()
