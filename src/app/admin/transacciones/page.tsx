@@ -15,18 +15,23 @@ export default async function TransaccionesPage({ searchParams }: PageProps) {
 
   const colombiaOffset = -5 * 60 * 60 * 1000 // UTC-5
   const where: any = {}
-  
-  if (fechaIni) {
-    const rangeStart = new Date(new Date(`${fechaIni}T00:00:00Z`).getTime() - colombiaOffset)
-    where.createdAt = { ...where.createdAt, gte: rangeStart }
-  }
-  
-  if (fechaFin) {
-    const rangeEnd = new Date(new Date(`${fechaFin}T00:00:00Z`).getTime() + 24 * 60 * 60 * 1000 - 1 - colombiaOffset)
-    where.createdAt = { ...where.createdAt, lte: rangeEnd }
-  }
+
   if (paymentMethodId) {
     where.paymentMethodId = paymentMethodId
+  }
+
+  if (fechaIni || fechaFin) {
+    where.venta = {}
+
+    if (fechaIni) {
+      const rangeStart = new Date(new Date(`${fechaIni}T00:00:00Z`).getTime() - colombiaOffset)
+      where.venta.fecha_venta = { ...where.venta.fecha_venta, gte: rangeStart }
+    }
+
+    if (fechaFin) {
+      const rangeEnd = new Date(new Date(`${fechaFin}T00:00:00Z`).getTime() + 24 * 60 * 60 * 1000 - 1 - colombiaOffset)
+      where.venta.fecha_venta = { ...where.venta.fecha_venta, lte: rangeEnd }
+    }
   }
 
   const transactions = await prisma.transaction.findMany({
@@ -39,7 +44,8 @@ export default async function TransaccionesPage({ searchParams }: PageProps) {
           cliente_nombre: true,
           vendedor_nombre: true,
           total: true,
-          createdAt: true
+          createdAt: true,
+          fecha_venta: true // 👈 CLAVE
         }
       }
     },

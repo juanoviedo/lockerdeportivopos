@@ -8,12 +8,13 @@ import type { Transaction, PaymentMethod } from '@prisma/client'
 type TransactionWithIncludes = Transaction & {
   paymentMethod: PaymentMethod
   venta: {
-    id: string
-    cliente_nombre: string | null
-    vendedor_nombre: string | null
-    total: number
-    createdAt: Date
-  }
+  id: string
+  cliente_nombre: string | null
+  vendedor_nombre: string | null
+  total: number
+  createdAt: Date
+  fecha_venta: Date | null
+}
 }
 
 interface TransactionTableProps {
@@ -153,13 +154,18 @@ export default function TransactionTable({ transactions, paymentMethods }: Trans
               {transactions.map((transaction) => (
                 <tr key={transaction.id} style={{ borderBottom: '1px solid rgba(255,255,255,0.05)', transition: 'background 0.2s' }}>
                   <td style={{ padding: '1.25rem 1rem', fontWeight: 600 }}>
-                    {new Date(transaction.createdAt).toLocaleDateString('es-ES', {
-                      year: 'numeric',
-                      month: 'short',
-                      day: 'numeric',
-                      hour: '2-digit',
-                      minute: '2-digit'
-                    })}
+                    {transaction.venta?.fecha_venta ? (
+                      new Date(transaction.venta.fecha_venta).toLocaleString('es-CO', {
+                        timeZone: 'America/Bogota',
+                        year: 'numeric',
+                        month: 'short',
+                        day: 'numeric',
+                        hour: '2-digit',
+                        minute: '2-digit'
+                      })
+                    ) : (
+                      '-'
+                    )}
                   </td>
                   <td style={{ padding: '1.25rem 1rem', color: 'var(--text-secondary)' }}>{transaction.venta.id}</td>
                   <td style={{ padding: '1.25rem 1rem', color: 'var(--text-secondary)' }}>{transaction.venta.cliente_nombre || '-'}</td>
