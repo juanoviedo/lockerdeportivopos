@@ -50,27 +50,24 @@ function AdminMetricsDisplay({
  * Este cálculo es costoso y se renderiza en el servidor.
  */
 async function AdminMetricsContent({ rangeStart, rangeEnd }: AdminMetricsProps) {
+  // 1. Normalizar a inicio y fin del día en hora Colombia
+  const start = new Date(rangeStart)
+  const end = new Date(rangeEnd)
+
+  start.setHours(0, 0, 0, 0)
+  end.setHours(23, 59, 59, 999)
+
+  // 2. Convertir a UTC (Colombia = UTC-5)
+  const startUTC = new Date(start.getTime() + (5 * 60 * 60 * 1000))
+  const endUTC = new Date(end.getTime() + (5 * 60 * 60 * 1000))
+
+  // 3. Query consistente
   const salesInRange = await prisma.sale.findMany({
     where: {
-      OR: [
-        {
-          fecha_venta: {
-            gte: rangeStart,
-            lte: rangeEnd,
-          },
-        },
-        {
-          AND: [
-            { fecha_venta: { equals: null } },
-            {
-              createdAt: {
-                gte: rangeStart,
-                lte: rangeEnd,
-              },
-            },
-          ],
-        },
-      ],
+      fecha_venta: {
+        gte: startUTC,
+        lte: endUTC,
+      },
     },
     include: {
       transactions: {
@@ -82,8 +79,12 @@ async function AdminMetricsContent({ rangeStart, rangeEnd }: AdminMetricsProps) 
   })
 
   const totalSalesCount = salesInRange.length
-  const totalSalesAmount = salesInRange.reduce((acc, sale) => acc + Number(sale.total || 0), 0)
-  const averageTicket = totalSalesCount > 0 ? totalSalesAmount / totalSalesCount : 0
+  const totalSalesAmount = salesInRange.reduce(
+    (acc, sale) => acc + Number(sale.total || 0),
+    0
+  )
+  const averageTicket =
+    totalSalesCount > 0 ? totalSalesAmount / totalSalesCount : 0
 
   return (
     <AdminMetricsDisplay
